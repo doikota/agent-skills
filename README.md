@@ -14,4 +14,4 @@
 - /document-skills:pptx 「AIエージェントの未来」というテーマで5枚のスライドを作成してください。タイトルスライド、現状の課題、技術トレンド、ユースケース、まとめの構成でお願いします。
 
 ## 自作スキル pptx-ai-agent-deck：入力例
-- cd .claude/skills/pptx-ai-agent-deck && node scripts/generate_deck.js assets/sample-content/ai-agent-future.json ../../../ai-agent-future.pptx
+- cd .claude/skills/pptx-ai-agent-deck && node scripts/generate_deck.js assets/sample-content/ai-agent-future.json ../../../AIエージェントの未来.pptx
