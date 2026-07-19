@@ -1,0 +1,54 @@
+{
+  "title": "AIエージェントの未来",
+  "titleEn": "THE FUTURE OF AI AGENTS",
+  "titleIcon": "cpu",
+  "subtitle": "自律的に考え、行動する知能へ",
+  "date": "2026年7月",
+  "sections": [
+    {
+      "heading": "現状の課題",
+      "subheading": "AIエージェントの実用化に立ちはだかる4つの壁",
+      "layout": "cards-2x2-light",
+      "items": [
+        { "icon": "alert-triangle", "title": "信頼性とハルシネーション", "body": "誤った情報を自信をもって生成し、意思決定を誤らせるリスク" },
+        { "icon": "shield", "title": "セキュリティとガバナンス", "body": "自律的な実行権限がもたらす誤操作・悪用への対策不足" },
+        { "icon": "eye", "title": "説明責任と透明性", "body": "判断プロセスがブラックボックス化し、検証が難しい" },
+        { "icon": "dollar-sign", "title": "コストと計算資源", "body": "高頻度な推論とツール呼び出しによる運用コストの増大" }
+      ]
+    },
+    {
+      "heading": "技術トレンド",
+      "subheading": "エージェントを次の段階へ押し上げる4つの技術",
+      "layout": "icon-rows",
+      "items": [
+        { "icon": "users", "title": "マルチエージェント協調", "body": "複数のエージェントが役割を分担し、対話しながら複雑なタスクを遂行する" },
+        { "icon": "tool", "title": "高度なツール呼び出し（Function Calling）", "body": "外部API・ソフトウェアとシームレスに連携し、実世界のタスクを実行する" },
+        { "icon": "database", "title": "長期記憶とコンテキスト管理", "body": "過去のやり取りを保持し、一貫性のある対応と学習を実現する" },
+        { "icon": "target", "title": "自律的プランニング", "body": "目標を小さなタスクに分解し、計画を立てて段階的に実行する" }
+      ]
+    },
+    {
+      "heading": "ユースケース",
+      "subheading": "すでに広がりつつある、AIエージェントの実務活用",
+      "layout": "cards-2x2-dark",
+      "items": [
+        { "icon": "headphones", "title": "カスタマーサポート自動化", "body": "24時間対応のAIオペレーターが問い合わせ対応と一次解決を担う" },
+        { "icon": "code", "title": "ソフトウェア開発支援", "body": "コード生成・デバッグ・レビューを自律的に行い開発を加速する" },
+        { "icon": "settings", "title": "業務プロセス自動化", "body": "定型的な事務作業やワークフローを人に代わって自律実行する" },
+        { "icon": "search", "title": "リサーチ・データ分析", "body": "大量の情報を収集・整理・要約し、意思決定を高速化する" }
+      ]
+    }
+  ],
+  "summary": {
+    "heading": "まとめ",
+    "subheading": "AIエージェントの未来を形づくる3つの視点",
+    "pointIcon": "check-circle",
+    "points": [
+      { "title": "自律性の向上が次の技術革新の核心", "body": "計画・記憶・ツール活用の進化がエージェントの可能性を押し広げる" },
+      { "title": "信頼性とガバナンスの両立が普及の鍵", "body": "課題への対応力こそが本格導入のスピードを左右する" },
+      { "title": "人間とAIエージェントの協働が新しい働き方をつくる", "body": "代替ではなく、共に成果を生み出すパートナーシップへ" }
+    ],
+    "taglineIcon": "arrow-up-right",
+    "tagline": "AIエージェントは、ツールから「パートナー」へ。"
+  }
+}
