@@ -18,11 +18,19 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak,
 )
+from reportlab.graphics.shapes import Drawing
+from reportlab.graphics.charts.barcharts import VerticalBarChart
+from reportlab.graphics.charts.piecharts import Pie
+from reportlab.graphics.charts.legends import Legend
 
 FONTS_DIR = Path(__file__).resolve().parent.parent / "assets" / "fonts"
 
 HEADER_BG = colors.HexColor("#16213e")
 ROW_ALT_BG = colors.HexColor("#f2f4f8")
+CHART_COLORS = [colors.HexColor(c) for c in [
+    "#16213e", "#0f3460", "#533483", "#e94560", "#ff6b6b",
+    "#f39c12", "#27ae60", "#2980b9", "#8e44ad", "#c0392b",
+]]
 
 
 def register_fonts():
@@ -36,6 +44,63 @@ def register_fonts():
 
 def yen(v):
     return f"¥{v:,.0f}"
+
+
+def department_bar_chart(dept_summary):
+    drawing = Drawing(450, 220)
+    chart = VerticalBarChart()
+    chart.x = 50
+    chart.y = 60
+    chart.width = 370
+    chart.height = 140
+    chart.data = [list(dept_summary["売上金額"])]
+    for i in range(len(dept_summary)):
+        chart.bars[(0, i)].fillColor = CHART_COLORS[i % len(CHART_COLORS)]
+    chart.valueAxis.valueMin = 0
+    chart.valueAxis.labels.fontName = "MeiryoUI"
+    chart.valueAxis.labels.fontSize = 8
+    chart.valueAxis.labelTextFormat = lambda v: f"{v:,.0f}"
+    chart.categoryAxis.categoryNames = list(dept_summary.index)
+    chart.categoryAxis.labels.fontName = "MeiryoUI"
+    chart.categoryAxis.labels.fontSize = 8
+    chart.categoryAxis.labels.angle = 30
+    chart.categoryAxis.labels.dx = -6
+    chart.categoryAxis.labels.dy = -12
+    drawing.add(chart)
+    return drawing
+
+
+def product_pie_chart(product_summary):
+    drawing = Drawing(450, 220)
+    pie = Pie()
+    pie.x = 120
+    pie.y = 20
+    pie.width = 160
+    pie.height = 160
+    pie.data = list(product_summary["売上金額"])
+    pie.labels = None
+    pie.slices.strokeWidth = 0.5
+    pie.slices.strokeColor = colors.white
+    for i in range(len(pie.data)):
+        pie.slices[i].fillColor = CHART_COLORS[i % len(CHART_COLORS)]
+
+    legend = Legend()
+    legend.x = 305
+    legend.y = 175
+    legend.dx = 8
+    legend.dy = 8
+    legend.fontName = "MeiryoUI"
+    legend.fontSize = 7.5
+    legend.alignment = "left"
+    legend.columnMaximum = 10
+    legend.colorNamePairs = [
+        (CHART_COLORS[i % len(CHART_COLORS)], name)
+        for i, name in enumerate(product_summary.index)
+    ]
+
+    drawing.add(pie)
+    drawing.add(legend)
+    return drawing
 
 
 def styled_table(data, col_widths, num_cols_right_align):
@@ -137,6 +202,8 @@ def build_report(csv_path, pdf_path, title):
         "100.0%",
     ])
     story.append(styled_table(dept_data, [55 * mm, 40 * mm, 35 * mm, 30 * mm], [1, 2, 3]))
+    story.append(Spacer(1, 12))
+    story.append(department_bar_chart(dept_summary))
 
     # 商品別ランキング
     story.append(PageBreak())
@@ -166,6 +233,8 @@ def build_report(csv_path, pdf_path, title):
         f"{product_summary['販売数量'].sum():,} 個",
     ])
     story.append(styled_table(rank_data, [15 * mm, 75 * mm, 40 * mm, 30 * mm], [2, 3]))
+    story.append(Spacer(1, 12))
+    story.append(product_pie_chart(product_summary))
 
     doc = SimpleDocTemplate(
         str(pdf_path),

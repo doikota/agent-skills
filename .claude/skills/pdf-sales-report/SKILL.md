@@ -37,3 +37,7 @@ python .claude/skills/pdf-sales-report/scripts/generate_sales_report.py \
 ## サンプルデータ
 
 `assets/sample-data/` に動作確認用のサンプルCSV(`sales_202412.csv`, `sales_202501.csv`)を同梱している。
+
+## グラフ
+
+生成されるレポートには、部門別の売上金額を示す棒グラフと、商品別の売上金額を示す円グラフが含まれる。
