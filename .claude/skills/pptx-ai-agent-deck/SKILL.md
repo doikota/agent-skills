@@ -1,6 +1,6 @@
 ---
 name: pptx-ai-agent-deck
-description: Generate a themed 5-slide Japanese business presentation (title / 課題 / トレンド / ユースケース / まとめ) as a .pptx, using a navy-indigo tech palette with an icon-in-circle motif. Use when the user asks to create a PowerPoint deck about AI agents (or a similarly structured topic: current challenges, technology trends, use cases, summary) from JSON content.
+description: Generate a themed 5-slide Japanese business presentation (title / 課題 / トレンド / ユースケース / まとめ) as a .pptx, using a navy-indigo tech palette with an icon-in-circle motif. Use when the user asks to create a PowerPoint deck about AI agents (or a similarly structured topic — current challenges, technology trends, use cases, summary) from JSON content.
 ---
 
 # PPTX AIエージェント系デッキ作成スキル
