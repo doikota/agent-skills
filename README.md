@@ -1,5 +1,25 @@
 ﻿# Agent Skills Overview
 
+## Dev Containers
+
+DockerとVS CodeのDev Containers拡張機能を用意し、このリポジトリを開いた状態でコマンドパレットから「Dev Containers: Reopen in Container」を実行する。初回作成時にPython仮想環境とPDF/PPTX生成に必要な依存パッケージをインストールする。
+
+PDF生成:
+
+```bash
+.venv/bin/python .claude/skills/pdf-sales-report/scripts/generate_sales_report.py \
+	.claude/skills/pdf-sales-report/assets/sample-data/sales_202501.csv \
+	monthly-report.pdf --title "2025年1月 売上レポート"
+```
+
+PPTX生成:
+
+```bash
+node .claude/skills/pptx-ai-agent-deck/scripts/generate_deck.js \
+	.claude/skills/pptx-ai-agent-deck/assets/sample-content/ai-agent-future.json \
+	ai-agent-future.pptx
+```
+
 ## document-skills プラグイン pdfスキル：プロンプト例
 - /pdf 以下のCSVデータを使って、月次売上レポートのPDFを作成してください。
 - sales_202501.csv
