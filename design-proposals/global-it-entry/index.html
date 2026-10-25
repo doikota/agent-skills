@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>グローバルIT統括部 採用サイト案</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  /*
+    デザイントークン
+    藍（hero の夜明け前の田）／躍動ブルー（挑む）／穂の金（実る）
+  */
+  :root {
+    --indigo: #061649;
+    --indigo-2: #0B2470;
+    --blue: #2F6BFF;
+    --blue-deep: #1438C8;
+    --sky: #BFD3FF;
+    --mist: #F3F6FD;
+    --ink: #0C1733;
+    --ink-soft: #46516E;
+    --line: #D5DDF0;
+    --grain: #F2C14E;
+
+    --mincho: "Shippori Mincho B1", "Hiragino Mincho ProN", serif;
+    --gothic: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", sans-serif;
+
+    /* 1.25 比の階層 */
+    --fs-sm: 0.875rem;
+    --fs-base: 1rem;
+    --fs-md: 1.25rem;
+    --fs-lg: 1.5625rem;
+    --fs-xl: 1.953rem;
+    --fs-2xl: clamp(1.953rem, 4vw, 3.052rem);
+
+    --gutter: clamp(16px, 5vw, 72px);
+    --measure: 36em;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  body {
+    margin: 0;
+    background: var(--mist);
+    color: var(--ink);
+    font-family: var(--gothic);
+    font-size: var(--fs-base);
+    line-height: 1.85;
+    font-feature-settings: "palt" 1;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid var(--grain); outline-offset: 3px; border-radius: 2px; }
+
+  .wrap { width: 100%; max-width: 1240px; margin-inline: auto; padding-inline: var(--gutter); }
+
+  /* ---------- ボタン ---------- */
+  .btn {
+    display: inline-flex; align-items: center; gap: .6em;
+    padding: .9em 1.6em;
+    border-radius: 999px;
+    font-weight: 700; text-decoration: none; letter-spacing: .04em;
+    transition: background-color .2s, color .2s;
+  }
+  .btn-primary { background: var(--blue); color: #fff; }
+  .btn-primary:hover { background: var(--blue-deep); }
+  .btn-ghost { border: 1.5px solid currentColor; }
+  .btn-ghost:hover { background: rgba(255,255,255,.1); }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    position: relative;
+    min-height: 100svh;
+    background: radial-gradient(120% 90% at 20% 110%, var(--indigo-2) 0%, var(--indigo) 60%);
+    color: #fff;
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: auto 1fr;
+  }
+  #field { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+  .topbar {
+    position: relative; z-index: 2;
+    display: flex; justify-content: space-between; align-items: center; gap: 24px;
+    padding-block: 24px;
+  }
+  .wordmark { text-decoration: none; line-height: 1.4; }
+  .wordmark b { display: block; font-size: var(--fs-sm); font-weight: 500; color: var(--sky); }
+  .wordmark span { font-weight: 700; font-size: var(--fs-md); }
+  .topbar ul { display: flex; gap: 28px; list-style: none; margin: 0; padding: 0; font-size: var(--fs-sm); }
+  .topbar ul a { text-decoration: none; }
+  .topbar ul a:hover { text-decoration: underline; text-underline-offset: 6px; }
+
+  .hero-body {
+    position: relative; z-index: 2;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 32px;
+    padding-bottom: clamp(40px, 8vh, 96px);
+  }
+  .hero-title {
+    grid-column: 2; grid-row: 1;
+    writing-mode: vertical-rl;
+    margin: 0;
+    font-family: var(--mincho);
+    font-weight: 800;
+    font-size: clamp(3.4rem, 10vh, 7.5rem);
+    line-height: 1.15;
+    letter-spacing: .08em;
+    align-self: start;
+    padding-top: 4vh;
+  }
+  .hero-title span { display: block; }
+  /* 二行目は一段下げて、穂が揺れてずれたような段差をつくる */
+  .hero-title span + span { padding-top: 1.6em; }
+
+  .hero-lead { grid-column: 1; grid-row: 1; max-width: 30em; }
+  .hero-lead p { margin: 0 0 28px; font-size: var(--fs-md); line-height: 1.9; color: #E6ECFF; }
+  .hero-lead .org { font-size: var(--fs-sm); color: var(--sky); margin-bottom: 12px; }
+  .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+  /* ---------- セクション共通 ---------- */
+  .section { padding-block: clamp(72px, 12vw, 152px); }
+  .section h2 {
+    margin: 0 0 24px;
+    font-family: var(--mincho);
+    font-weight: 800;
+    font-size: var(--fs-2xl);
+    line-height: 1.4;
+    letter-spacing: .02em;
+  }
+  .lede { max-width: var(--measure); color: var(--ink-soft); margin: 0; }
+  .note { font-size: var(--fs-sm); color: var(--ink-soft); }
+
+  /* ---------- 仕事 ---------- */
+  .work-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(32px, 6vw, 96px);
+  }
+  .work-head { position: sticky; top: 32px; align-self: start; }
+  .domains { margin: 0; }
+  .domain {
+    position: relative;
+    padding: 28px 0 28px 32px;
+    border-top: 1px solid var(--line);
+  }
+  .domain:last-child { border-bottom: 1px solid var(--line); }
+  /* 左端の細い線は「穂」。担当領域ごとに背丈が違う */
+  .domain::before {
+    content: ""; position: absolute; left: 0; bottom: 28px;
+    width: 3px; border-radius: 2px; background: var(--blue);
+    height: var(--h, 60%);
+  }
+  .domain dt { font-weight: 700; font-size: var(--fs-lg); line-height: 1.5; margin-bottom: 8px; }
+  .domain dd { margin: 0; color: var(--ink-soft); max-width: var(--measure); }
+
+  /* ---------- 世界の時刻 ---------- */
+  .globe { background: var(--indigo); color: #fff; }
+  .globe .lede { color: #C9D5F5; }
+  .clocks {
+    list-style: none; margin: 56px 0 16px; padding: 0;
+    display: grid; grid-template-columns: repeat(6, minmax(0, 1fr));
+    border-top: 1px solid rgba(191,211,255,.25);
+  }
+  .clock { padding: 24px 16px 24px 0; border-right: 1px solid rgba(191,211,255,.15); }
+  .clock + .clock { padding-left: 16px; }
+  .clock:last-child { border-right: 0; }
+  .clock-city { font-size: var(--fs-sm); color: var(--sky); }
+  .clock-time {
+    display: block;
+    font-family: var(--mincho); font-weight: 600;
+    font-size: var(--fs-xl);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.3;
+  }
+  .clock-state { font-size: var(--fs-sm); color: #C9D5F5; }
+  .clock[data-open="true"] .clock-state { color: var(--grain); }
+  /* 24時間の帯。現在時刻の位置に点を置く */
+  .dayband {
+    position: relative; height: 4px; margin: 14px 0 10px;
+    border-radius: 2px;
+    background: linear-gradient(90deg,
+      rgba(191,211,255,.15) 0 37.5%, rgba(47,107,255,.85) 37.5% 75%, rgba(191,211,255,.15) 75% 100%);
+  }
+  .dayband i {
+    position: absolute; top: 50%; left: var(--pos, 0%);
+    width: 10px; height: 10px; margin: -5px 0 0 -5px;
+    border-radius: 50%; background: #fff;
+  }
+  .globe .note { color: #9FB0DA; }
+
+  /* ---------- ストーリー（挑む → 育てる → 実る） ---------- */
+  .story-stages {
+    list-style: none; margin: 56px 0 0; padding: 0;
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(24px, 4vw, 56px);
+    align-items: end;
+  }
+  .stage { border-left: 3px solid var(--blue); padding-left: 20px; }
+  .stage:nth-child(1) { padding-top: 0; }
+  .stage:nth-child(2) { padding-top: 48px; }
+  .stage:nth-child(3) { padding-top: 96px; border-left-color: var(--grain); }
+  .stage-word {
+    display: block;
+    font-family: var(--mincho); font-weight: 800;
+    font-size: var(--fs-2xl); line-height: 1.2;
+    margin-bottom: 12px;
+  }
+  .stage p { margin: 0; color: var(--ink-soft); }
+  .stage .when { display: block; font-size: var(--fs-sm); color: var(--blue-deep); font-weight: 700; margin-bottom: 4px; }
+  .voice {
+    margin: 72px 0 0; max-width: 40em;
+    font-family: var(--mincho); font-weight: 600;
+    font-size: var(--fs-lg); line-height: 1.9;
+  }
+  .voice footer { margin-top: 12px; font-family: var(--gothic); font-weight: 400; font-size: var(--fs-sm); color: var(--ink-soft); }
+
+  /* ---------- 募集職種 ---------- */
+  .jobs { background: #fff; }
+  .job-list { margin-top: 40px; border-top: 1px solid var(--line); }
+  .job { border-bottom: 1px solid var(--line); }
+  .job summary {
+    list-style: none; cursor: pointer;
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: center;
+    padding: 28px 0;
+  }
+  .job summary::-webkit-details-marker { display: none; }
+  .job-title { font-weight: 700; font-size: var(--fs-md); line-height: 1.5; }
+  .job-meta { display: block; font-size: var(--fs-sm); color: var(--ink-soft); font-weight: 400; margin-top: 4px; }
+  .job-toggle {
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 1.5px solid var(--line);
+    position: relative; flex: none;
+    transition: background-color .2s, border-color .2s;
+  }
+  .job-toggle::before, .job-toggle::after {
+    content: ""; position: absolute; left: 50%; top: 50%;
+    width: 14px; height: 2px; margin: -1px 0 0 -7px; background: var(--ink);
+    transition: transform .25s ease;
+  }
+  .job-toggle::after { transform: rotate(90deg); }
+  .job[open] .job-toggle { background: var(--blue); border-color: var(--blue); }
+  .job[open] .job-toggle::before, .job[open] .job-toggle::after { background: #fff; }
+  .job[open] .job-toggle::after { transform: rotate(0deg); }
+  .job summary:hover .job-title { color: var(--blue-deep); }
+  .job-body {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 48px;
+    padding: 0 0 36px;
+  }
+  .job-body h3 { margin: 0 0 6px; font-size: var(--fs-base); }
+  .job-body p, .job-body ul { margin: 0; color: var(--ink-soft); }
+  .job-body ul { padding-left: 1.2em; }
+  .job-body .btn { grid-column: 1 / -1; justify-self: start; }
+  @media (prefers-reduced-motion: no-preference) {
+    .job[open] .job-body { animation: open .3s ease; }
+    @keyframes open { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+  }
+
+  /* ---------- エントリー ---------- */
+  .entry { background: var(--blue); color: #fff; }
+  .entry .lede { color: #E6ECFF; }
+  .steps {
+    list-style: none; counter-reset: step;
+    margin: 48px 0; padding: 0;
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+    border-top: 1px solid rgba(255,255,255,.4);
+  }
+  .steps li { counter-increment: step; padding: 20px 20px 0 0; }
+  .steps li::before {
+    content: counter(step);
+    display: block;
+    font-family: var(--mincho); font-weight: 800; font-size: var(--fs-xl); line-height: 1.2;
+  }
+  .steps b { display: block; }
+  .steps span { font-size: var(--fs-sm); color: #E6ECFF; }
+  .entry .btn-primary { background: #fff; color: var(--blue-deep); }
+  .entry .btn-primary:hover { background: var(--grain); color: var(--ink); }
+
+  .site-foot { background: var(--indigo); color: #9FB0DA; font-size: var(--fs-sm); padding-block: 32px; }
+
+  /* ---------- レスポンシブ ---------- */
+  @media (max-width: 960px) {
+    .clocks { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .clock:nth-child(3) { border-right: 0; }
+    .clock:nth-child(4) { padding-left: 0; }
+    .clock:nth-child(n+4) { border-top: 1px solid rgba(191,211,255,.15); }
+  }
+  @media (max-width: 760px) {
+    .topbar ul { display: none; }
+    .hero-body { grid-template-columns: 1fr; }
+    .hero-title { grid-column: 1; grid-row: 1; justify-self: end; font-size: clamp(2.6rem, 13vw, 4rem); padding-top: 2vh; }
+    .hero-lead { grid-row: 2; }
+    .work-grid { grid-template-columns: 1fr; }
+    .work-head { position: static; }
+    .clocks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .clock, .clock + .clock { padding: 20px 12px 20px 0; border-right: 0; border-top: 1px solid rgba(191,211,255,.15); }
+    .story-stages { grid-template-columns: 1fr; }
+    .stage:nth-child(n) { padding-top: 0; }
+    .job-body { grid-template-columns: 1fr; }
+    .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <canvas id="field" aria-hidden="true"></canvas>
+
+  <nav class="wrap topbar" aria-label="サイト内">
+    <a class="wordmark" href="#">
+      <b>みずほフィナンシャルグループ</b>
+      <span>グローバルIT統括部 採用</span>
+    </a>
+    <ul>
+      <li><a href="#work">仕事</a></li>
+      <li><a href="#globe">拠点</a></li>
+      <li><a href="#story">ストーリー</a></li>
+      <li><a href="#jobs">募集職種</a></li>
+    </ul>
+    <a class="btn btn-ghost" href="#entry">エントリー</a>
+  </nav>
+
+  <div class="wrap hero-body">
+    <h1 class="hero-title"><span>ともに挑む、</span><span>ともに実る。</span></h1>
+    <div class="hero-lead">
+      <p class="org">グローバルIT統括部</p>
+      <p>世界の拠点をつなぐ金融システムを、止めずに、前へ進める。東京と海外のエンジニアがひとつのチームで、次の当たり前をつくっています。</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#jobs">募集職種を見る</a>
+        <a class="btn btn-ghost" href="#work">仕事を知る</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section id="work" class="section">
+    <div class="wrap work-grid">
+      <div class="work-head">
+        <h2>海外のITを、<br>ひとつのチームで。</h2>
+        <p class="lede">各国の規制、時差、言語。違いを前提に、グループ共通の基盤をつくり、守り、育てるのが私たちの仕事です。</p>
+      </div>
+      <dl class="domains">
+        <div class="domain" style="--h:70%">
+          <dt>海外拠点のシステム基盤</dt>
+          <dd>ネットワーク、データセンター、クラウドを各拠点と共同で設計・運用します。グループ共通基盤への移行を、現地チームと並走して進めます。</dd>
+        </div>
+        <div class="domain" style="--h:85%">
+          <dt>決済・市場系システム</dt>
+          <dd>国際送金や市場取引を支えるシステムの開発と更改を担います。止められない仕組みを、止めずに変える方法を考えるところから始まります。</dd>
+        </div>
+        <div class="domain" style="--h:55%">
+          <dt>サイバーセキュリティとガバナンス</dt>
+          <dd>各国当局の要件をふまえ、グループ全体のセキュリティ水準をそろえます。監視、対応、ルールづくりまでを一貫して担当します。</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <section id="globe" class="section globe" aria-labelledby="globe-title">
+    <div class="wrap">
+      <h2 id="globe-title">どこかで、いつも誰かが挑んでいる。</h2>
+      <p class="lede">東京が眠るころ、ロンドンが動き出し、ニューヨークへ引き継ぐ。いま、それぞれの拠点の時刻です。</p>
+      <ul class="clocks" id="clocks"></ul>
+      <p class="note">青い帯は現地の9時〜18時。拠点は表示例です。</p>
+    </div>
+  </section>
+
+  <section id="story" class="section">
+    <div class="wrap">
+      <h2>挑んだことが、実るまで。</h2>
+      <p class="lede">入社3年目のネットワークエンジニアが、アジア拠点の基盤刷新に携わった2年間（サンプル）。</p>
+      <ol class="story-stages">
+        <li class="stage">
+          <span class="when">1年目</span>
+          <span class="stage-word">挑む</span>
+          <p>シンガポールのチームと毎朝オンラインで設計レビュー。英語の議事録を書くことから始めました。</p>
+        </li>
+        <li class="stage">
+          <span class="when">2年目 春</span>
+          <span class="stage-word">育てる</span>
+          <p>現地に3か月滞在し、移行手順を一緒に組み立てる。拠点ごとの違いを、共通の手順書に落としていきました。</p>
+        </li>
+        <li class="stage">
+          <span class="when">2年目 秋</span>
+          <span class="stage-word">実る</span>
+          <p>週末の切り替えを無停止で完了。その手順は、次に移行するほかの拠点で使われています。</p>
+        </li>
+      </ol>
+      <blockquote class="voice">
+        「自分の書いた手順書が、会ったことのない国のチームで使われている。それを知ったときに、この仕事の大きさがわかりました。」
+        <footer>ネットワークエンジニア／2021年入社（仮名・サンプル）</footer>
+      </blockquote>
+    </div>
+  </section>
+
+  <section id="jobs" class="section jobs" aria-labelledby="jobs-title">
+    <div class="wrap">
+      <h2 id="jobs-title">募集職種</h2>
+      <p class="lede">キャリア採用の募集です。職種名を選ぶと詳細が開きます。内容はデザイン用のサンプルです。</p>
+
+      <div class="job-list">
+        <details class="job">
+          <summary>
+            <span class="job-title">クラウド基盤エンジニア（海外拠点）<span class="job-meta">東京／正社員／海外出張あり</span></span>
+            <span class="job-toggle" aria-hidden="true"></span>
+          </summary>
+          <div class="job-body">
+            <div><h3>仕事内容</h3><p>海外拠点のオンプレミス環境から、グループ共通のクラウド基盤への移行を設計・推進します。</p></div>
+            <div><h3>求める経験</h3><ul><li>クラウド基盤の設計・構築経験3年以上</li><li>英語での業務コミュニケーション</li></ul></div>
+            <a class="btn btn-primary" href="#entry">この職種にエントリーする</a>
+          </div>
+        </details>
+        <details class="job">
+          <summary>
+            <span class="job-title">サイバーセキュリティスペシャリスト<span class="job-meta">東京／正社員</span></span>
+            <span class="job-toggle" aria-hidden="true"></span>
+          </summary>
+          <div class="job-body">
+            <div><h3>仕事内容</h3><p>海外拠点を含むグループ全体のセキュリティ監視と、インシデント対応体制の整備を担います。</p></div>
+            <div><h3>求める経験</h3><ul><li>SOC・CSIRTでの実務経験</li><li>海外のガイドラインへの理解</li></ul></div>
+            <a class="btn btn-primary" href="#entry">この職種にエントリーする</a>
+          </div>
+        </details>
+        <details class="job">
+          <summary>
+            <span class="job-title">ITプロジェクトマネージャー（グローバル案件）<span class="job-meta">東京／正社員／海外赴任の可能性あり</span></span>
+            <span class="job-toggle" aria-hidden="true"></span>
+          </summary>
+          <div class="job-body">
+            <div><h3>仕事内容</h3><p>複数の国と地域にまたがるシステム更改プロジェクトを、計画から稼働までリードします。</p></div>
+            <div><h3>求める経験</h3><ul><li>大規模プロジェクトの管理経験</li><li>多国籍チームでの業務経験</li></ul></div>
+            <a class="btn btn-primary" href="#entry">この職種にエントリーする</a>
+          </div>
+        </details>
+        <details class="job">
+          <summary>
+            <span class="job-title">アプリケーションアーキテクト（決済・市場系）<span class="job-meta">東京／正社員</span></span>
+            <span class="job-toggle" aria-hidden="true"></span>
+          </summary>
+          <div class="job-body">
+            <div><h3>仕事内容</h3><p>国際送金・市場系システムのアーキテクチャを設計し、段階的なモダナイゼーションを進めます。</p></div>
+            <div><h3>求める経験</h3><ul><li>基幹系システムの設計経験</li><li>金融業界での開発経験（歓迎）</li></ul></div>
+            <a class="btn btn-primary" href="#entry">この職種にエントリーする</a>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section id="entry" class="section entry" aria-labelledby="entry-title">
+    <div class="wrap">
+      <h2 id="entry-title">まずは、話してみませんか。</h2>
+      <p class="lede">応募の前に、現場のエンジニアとのカジュアル面談もできます。選考とは関係なく、仕事の中身を聞いてください。</p>
+      <ol class="steps">
+        <li><b>エントリー</b><span>フォームから職種を選んで送信</span></li>
+        <li><b>カジュアル面談</b><span>現場のエンジニアと30分</span></li>
+        <li><b>面接</b><span>2〜3回、オンライン可</span></li>
+        <li><b>内定</b><span>配属先と働き方をすり合わせ</span></li>
+      </ol>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#">エントリーフォームへ進む</a>
+        <a class="btn btn-ghost" href="#">カジュアル面談を申し込む</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">本ページはデザイン提案用のモックアップです。掲載している数値・職種・社員の声はすべてサンプルです。</div>
+</footer>
+
+<script>
+/* ---------- 世界の時刻 ---------- */
+(() => {
+  const cities = [
+    ["東京", "Asia/Tokyo"],
+    ["上海", "Asia/Shanghai"],
+    ["香港", "Asia/Hong_Kong"],
+    ["シンガポール", "Asia/Singapore"],
+    ["ロンドン", "Europe/London"],
+    ["ニューヨーク", "America/New_York"],
+  ];
+  const list = document.getElementById("clocks");
+  const items = cities.map(([name, tz]) => {
+    const li = document.createElement("li");
+    li.className = "clock";
+    li.innerHTML = `<span class="clock-city">${name}</span><time class="clock-time"></time>` +
+      `<div class="dayband" aria-hidden="true"><i></i></div><span class="clock-state"></span>`;
+    list.appendChild(li);
+    return { li, tz, time: li.querySelector("time"), dot: li.querySelector("i"), state: li.querySelector(".clock-state") };
+  });
+
+  function tick() {
+    const now = new Date();
+    for (const c of items) {
+      const parts = new Intl.DateTimeFormat("en-GB", { timeZone: c.tz, hour: "2-digit", minute: "2-digit", hourCycle: "h23" })
+        .formatToParts(now);
+      const h = +parts.find(p => p.type === "hour").value;
+      const m = +parts.find(p => p.type === "minute").value;
+      const open = h >= 9 && h < 18;
+      c.time.textContent = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+      c.dot.style.setProperty("--pos", `${((h * 60 + m) / 1440) * 100}%`);
+      c.state.textContent = open ? "稼働中" : "時間外";
+      c.li.dataset.open = open;
+    }
+  }
+  tick();
+  setInterval(tick, 15000);
+})();
+
+/* ---------- Hero：瑞穂の田 ----------
+   読み込み時に穂が左から波のように伸び（挑む）、
+   その後いくつかの穂先に金の粒が実る（実る）。
+   以降はゆるやかに揺れ、ポインタを動かすと風が吹く。 */
+(() => {
+  const canvas = document.getElementById("field");
+  const ctx = canvas.getContext("2d");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let W = 0, H = 0, stalks = [], start = 0, wind = 0, windTarget = 0, lastX = null, running = true;
+
+  function rand(seed) { const x = Math.sin(seed * 9301 + 49297) * 233280; return x - Math.floor(x); }
+
+  function layout() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = canvas.clientWidth; H = canvas.clientHeight;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const count = Math.round(W / 9);
+    stalks = Array.from({ length: count }, (_, i) => {
+      const r = rand(i + 1), r2 = rand(i + 101), r3 = rand(i + 211);
+      return {
+        x: (i + r * 0.8) * (W / count),
+        h: H * (0.28 + r2 * 0.5),
+        w: 0.8 + r3 * 1.6,
+        phase: r * Math.PI * 2,
+        alpha: 0.18 + r2 * 0.4,
+        ripe: r3 > 0.78,          // 実る穂
+        delay: (i / count) * 900 + r * 250,
+      };
+    });
+  }
+
+  const ease = t => 1 - Math.pow(1 - Math.min(Math.max(t, 0), 1), 3);
+
+  function draw(now) {
+    const t = reduce ? 1e9 : now - start;
+    wind += (windTarget - wind) * 0.04;
+    windTarget *= 0.96;
+    ctx.clearRect(0, 0, W, H);
+
+    for (const s of stalks) {
+      const g = ease((t - s.delay) / 1400);
+      if (g <= 0) continue;
+      const h = s.h * g;
+      const sway = reduce ? 0 : Math.sin(t * 0.0011 + s.phase + s.x * 0.004) * 0.06;
+      const bend = (sway + wind) * h;
+      const tipX = s.x + bend, tipY = H - h;
+
+      ctx.strokeStyle = `rgba(110, 150, 255, ${s.alpha})`;
+      ctx.lineWidth = s.w;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(s.x, H);
+      ctx.quadraticCurveTo(s.x, H - h * 0.55, tipX, tipY);
+      ctx.stroke();
+
+      if (s.ripe) {
+        const r = ease((t - s.delay - 1500) / 1200);
+        if (r > 0) {
+          ctx.fillStyle = `rgba(242, 193, 78, ${0.85 * r})`;
+          const n = 6;
+          for (let k = 0; k < n; k++) {
+            // 穂先から少し下まで、左右交互に粒を並べる
+            const f = k / n;
+            const px = tipX - bend * f * 0.12 + (k % 2 ? 2.6 : -2.6) * r;
+            const py = tipY + f * 26;
+            ctx.beginPath();
+            ctx.ellipse(px, py, 1.6 + r, 3 + r * 1.5, (k % 2 ? 0.5 : -0.5) + wind, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+    }
+    if (!reduce && running) requestAnimationFrame(draw);
+  }
+
+  layout();
+  addEventListener("resize", () => { layout(); if (reduce) draw(0); });
+  if (!reduce) {
+    canvas.parentElement.addEventListener("pointermove", e => {
+      if (lastX !== null) windTarget = Math.max(-0.35, Math.min(0.35, windTarget + (e.clientX - lastX) * 0.002));
+      lastX = e.clientX;
+    });
+    new IntersectionObserver(([en]) => {
+      const was = running;
+      running = en.isIntersecting;
+      if (running && !was) requestAnimationFrame(draw);
+    }).observe(canvas);
+  }
+  start = performance.now();
+  requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>
