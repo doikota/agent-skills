@@ -1,12 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Read(c:\\Git\\GitHub\\agent-skills\\**)",
-      "Edit(c:\\Git\\GitHub\\agent-skills\\**)",
-      "Write(c:\\Git\\GitHub\\agent-skills\\**)",
-      "Bash(c:\\Git\\GitHub\\agent-skills\\**)",
-      "Glob(c:\\Git\\GitHub\\agent-skills\\**)",
-      "Grep(c:\\Git\\GitHub\\agent-skills\\**)"
+      "Read(/workspaces/agent-skills/**)",
+      "Edit(/workspaces/agent-skills/**)",
+      "Write(/workspaces/agent-skills/**)",
+      "Bash(/workspaces/agent-skills/**)",
+      "Glob(/workspaces/agent-skills/**)",
+      "Grep(/workspaces/agent-skills/**)"
     ]
   }
 }
