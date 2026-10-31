@@ -1,0 +1,724 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>青さで挑むプロジェクト</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Lora:wght@400;500&family=Noto+Sans+JP:wght@500;700&family=Noto+Serif+JP:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+<style>
+  :root {
+    /* Anthropic brand */
+    --dark: #141413;
+    --light: #faf9f5;
+    --mid-gray: #b0aea5;
+    --light-gray: #e8e6dc;
+    --orange: #d97757;
+    --blue: #6a9bcc;
+    --green: #788c5d;
+
+    --font-heading: "Poppins", "Noto Sans JP", Arial, sans-serif;
+    --font-body: "Lora", "Noto Serif JP", Georgia, serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--light);
+    color: var(--dark);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.9;
+  }
+
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+
+  h1, h2, h3, .eyebrow, .label { font-family: var(--font-heading); }
+
+  /* ---------- hero ---------- */
+  header { padding: 88px 0 56px; border-bottom: 1px solid var(--light-gray); }
+  .eyebrow {
+    font-size: 13px; font-weight: 600; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--orange); margin: 0 0 20px;
+  }
+  h1 { font-size: clamp(34px, 6vw, 56px); font-weight: 600; line-height: 1.25; margin: 0 0 24px; }
+  .lead { font-size: 18px; max-width: 680px; margin: 0; }
+
+  .facts {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1px; background: var(--light-gray); border: 1px solid var(--light-gray);
+    margin-top: 48px;
+  }
+  .facts div { background: var(--light); padding: 18px 20px; }
+  .label { display: block; font-size: 12px; font-weight: 500; color: var(--mid-gray); letter-spacing: .08em; }
+  .facts strong { font-family: var(--font-heading); font-weight: 600; font-size: 17px; }
+
+  /* ---------- sections ---------- */
+  section { padding: 72px 0; border-bottom: 1px solid var(--light-gray); }
+  h2 { font-size: 28px; font-weight: 600; margin: 0 0 8px; }
+  h2 + .sub { color: #5e5d59; margin: 0 0 36px; }
+  h3 { font-size: 19px; font-weight: 600; margin: 0 0 6px; line-height: 1.5; }
+
+  /* reference */
+  .ref { display: grid; grid-template-columns: 1.3fr 1fr; gap: 40px; align-items: start; }
+  .ref img { width: 100%; display: block; border-radius: 6px; }
+  .swatches { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 8px; }
+  .sw { font-size: 12px; line-height: 1.5; }
+  .sw i { display: block; height: 56px; border-radius: 4px; margin-bottom: 6px; border: 1px solid rgba(20,20,19,.08); }
+  .sw b { font-family: var(--font-heading); font-weight: 500; display: block; }
+  .sw code { color: #5e5d59; }
+
+  /* deliverables */
+  .works { display: grid; gap: 56px; }
+  .work { display: grid; grid-template-columns: 300px 1fr; gap: 40px; align-items: start; }
+  .work .thumb {
+    background: var(--light-gray); border-radius: 6px; overflow: hidden;
+    aspect-ratio: 2400 / 3394; display: flex; align-items: center; justify-content: center;
+  }
+  .work .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .work .thumb.html { aspect-ratio: 4 / 3; font-family: var(--font-heading); color: var(--mid-gray); font-size: 14px; }
+  .tag {
+    display: inline-block; font-family: var(--font-heading); font-size: 12px; font-weight: 500;
+    padding: 2px 10px; border-radius: 999px; margin-bottom: 12px; color: var(--light);
+  }
+  .tag.o { background: var(--orange); } .tag.b { background: var(--blue); } .tag.g { background: var(--green); }
+  .work .en { font-family: var(--font-heading); color: var(--mid-gray); font-size: 14px; margin: 0 0 14px; }
+  .work p { margin: 0 0 14px; }
+  .files { list-style: none; padding: 0; margin: 16px 0 0; font-size: 14px; }
+  .files li { padding: 6px 0; border-top: 1px solid var(--light-gray); }
+  .files a { color: var(--dark); text-decoration-color: var(--orange); text-underline-offset: 3px; }
+
+  /* motifs */
+  .motifs { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+  .motif { background: #fff; border: 1px solid var(--light-gray); border-radius: 6px; padding: 24px; }
+  .motif .n { font-family: var(--font-heading); font-size: 32px; font-weight: 600; line-height: 1; margin-bottom: 12px; }
+  .motif:nth-child(3n+1) .n { color: var(--orange); }
+  .motif:nth-child(3n+2) .n { color: var(--blue); }
+  .motif:nth-child(3n) .n { color: var(--green); }
+  .motif p { margin: 0; font-size: 15px; }
+
+  /* timeline */
+  ol.steps { list-style: none; padding: 0; margin: 0; counter-reset: s; }
+  ol.steps li { position: relative; padding: 0 0 28px 56px; counter-increment: s; }
+  ol.steps li::before {
+    content: counter(s, decimal-leading-zero); position: absolute; left: 0; top: 0;
+    font-family: var(--font-heading); font-weight: 600; color: var(--orange);
+  }
+  ol.steps li::after {
+    content: ""; position: absolute; left: 10px; top: 32px; bottom: 6px; width: 1px; background: var(--light-gray);
+  }
+  ol.steps li:last-child::after { display: none; }
+  ol.steps b { font-family: var(--font-heading); font-weight: 600; }
+
+  /* notes */
+  .note { border-left: 3px solid var(--orange); background: #fff; padding: 20px 24px; border-radius: 0 6px 6px 0; }
+  .note ul { margin: 8px 0 0; padding-left: 1.2em; }
+  .next { padding-left: 1.2em; margin: 0; }
+  .next li { margin-bottom: 6px; }
+
+  footer { padding: 40px 0 64px; font-size: 13px; color: var(--mid-gray); font-family: var(--font-heading); }
+
+  /* ---------- generative art (algorithmic-art viewer, scoped) ---------- */
+  .ga { display: flex; gap: 20px; align-items: flex-start; }
+  .ga .sidebar {
+    width: 300px; flex-shrink: 0; background: rgba(255,255,255,.95);
+    padding: 24px; border-radius: 12px; box-shadow: 0 10px 30px rgba(20,20,19,.1);
+    font-family: var(--font-heading); line-height: 1.4;
+  }
+  .ga .sidebar h4 { font-family: "Lora", "Noto Serif JP", serif; font-size: 20px; font-weight: 500; margin: 0 0 6px; }
+  .ga .subtitle { color: var(--mid-gray); font-size: 13px; margin-bottom: 24px; }
+  .ga .control-section { margin-bottom: 24px; }
+  .ga .control-section:last-child { margin-bottom: 0; }
+  .ga .control-section h5 {
+    font-size: 15px; font-weight: 600; margin: 0 0 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .ga .control-section h5::before { content: "•"; color: var(--orange); font-weight: bold; }
+  .ga .seed-input {
+    width: 100%; background: var(--light); padding: 10px; border-radius: 8px;
+    font-family: "Courier New", monospace; font-size: 14px; margin-bottom: 10px;
+    border: 1px solid var(--light-gray); text-align: center;
+  }
+  .ga .seed-input:focus { outline: none; border-color: var(--orange); box-shadow: 0 0 0 2px rgba(217,119,87,.1); background: #fff; }
+  .ga .seed-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+  .ga .control-group { margin-bottom: 16px; }
+  .ga .control-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+  .ga .slider-container { display: flex; align-items: center; gap: 12px; }
+  .ga .slider-container input[type="range"] {
+    flex: 1; height: 4px; background: var(--light-gray); border-radius: 2px; outline: none; -webkit-appearance: none;
+  }
+  .ga .slider-container input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px; background: var(--orange); border-radius: 50%; cursor: pointer;
+  }
+  .ga .slider-container input[type="range"]::-moz-range-thumb {
+    width: 16px; height: 16px; background: var(--orange); border-radius: 50%; border: none; cursor: pointer;
+  }
+  .ga .value-display { font-family: "Courier New", monospace; font-size: 12px; color: var(--mid-gray); min-width: 44px; text-align: right; }
+  .ga .color-group { margin-bottom: 12px; }
+  .ga .color-group label { display: block; font-size: 12px; color: var(--mid-gray); margin-bottom: 4px; }
+  .ga .color-picker-container { display: flex; align-items: center; gap: 8px; }
+  .ga .color-picker-container input[type="color"] { width: 32px; height: 32px; border: none; border-radius: 6px; cursor: pointer; background: none; padding: 0; }
+  .ga .color-value { font-family: "Courier New", monospace; font-size: 12px; color: var(--mid-gray); }
+  .ga .button {
+    background: var(--orange); color: #fff; border: none; padding: 9px 14px; border-radius: 6px;
+    font-family: var(--font-heading); font-size: 13px; font-weight: 500; cursor: pointer; width: 100%;
+    transition: background .2s ease, transform .2s ease;
+  }
+  .ga .button:hover { background: #c86641; transform: translateY(-1px); }
+  .ga .button:active { transform: translateY(0); }
+  .ga .button.secondary { background: var(--blue); }
+  .ga .button.secondary:hover { background: #5a8bb8; }
+  .ga .button.tertiary { background: var(--green); }
+  .ga .button.tertiary:hover { background: #6b7b52; }
+  .ga .button-row { display: flex; gap: 8px; }
+  .ga .button-row .button { flex: 1; }
+  .ga .canvas-area { flex: 1; min-width: 0; }
+  .ga #hanabi-canvas {
+    width: 100%; border-radius: 12px; overflow: hidden; background: #0b064b;
+    box-shadow: 0 20px 40px rgba(20,20,19,.1); aspect-ratio: 3 / 2;
+  }
+  .ga #hanabi-canvas canvas { display: block; width: 100% !important; height: auto !important; }
+  .ga .loading { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--mid-gray); font-family: var(--font-heading); font-size: 14px; }
+  .ga-legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px 24px; margin: 20px 0 0; padding: 0; list-style: none; font-size: 14px; }
+  .ga-legend b { font-family: var(--font-heading); font-weight: 600; }
+
+  @media (max-width: 900px) {
+    .ga { flex-direction: column-reverse; }
+    .ga .sidebar { width: 100%; }
+    .ga .canvas-area { width: 100%; }
+  }
+
+  @media (max-width: 760px) {
+    header { padding: 56px 0 40px; }
+    section { padding: 52px 0; }
+    .ref, .work { grid-template-columns: 1fr; gap: 24px; }
+    .work .thumb { max-width: 300px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <p class="eyebrow">Design Proposals · Project Overview</p>
+    <h1>青さで、挑む。<br>プロジェクト概要</h1>
+    <p class="lead">キャンペーンビジュアル「青さで、挑む。」を手がかりに、コーポレートメッセージ「ともに挑む。ともに実る。」を、配色テーマとポスターの2つの形で表現したデザイン検討の記録です。</p>
+    <div class="facts">
+      <div><span class="label">TYPE</span><strong>デザイン検討（社内）</strong></div>
+      <div><span class="label">MESSAGE</span><strong>ともに挑む。ともに実る。</strong></div>
+      <div><span class="label">DELIVERABLES</span><strong>テーマ 1 ／ ポスター 2 ／ 生成アート 1</strong></div>
+      <div><span class="label">STATUS</span><strong>試作・レビュー待ち</strong></div>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>参照ビジュアル</h2>
+    <p class="sub">出発点となったキャンペーン画像と、そこから抽出した配色です。</p>
+    <div class="ref">
+      <img src="../theme-sample/青さで挑む.jpg" alt="参照したキャンペーンビジュアル「青さで、挑む。」">
+      <div>
+        <p>深い藍から明るい青へ流れる光の筋、白い文字、そしてロゴ下の一筋の赤。この「青の深度＋一点の赤」という構造を、すべての成果物の共通言語にしています。</p>
+        <div class="swatches">
+          <div class="sw"><i style="background:#0b064b"></i><b>Midnight Indigo</b><code>#0b064b</code></div>
+          <div class="sw"><i style="background:#011c6b"></i><b>Deep Ocean</b><code>#011c6b</code></div>
+          <div class="sw"><i style="background:#0150c5"></i><b>Challenge Blue</b><code>#0150c5</code></div>
+          <div class="sw"><i style="background:#016ad5"></i><b>Wave Blue</b><code>#016ad5</code></div>
+          <div class="sw"><i style="background:#cdd7ed"></i><b>Mist Lavender</b><code>#cdd7ed</code></div>
+          <div class="sw"><i style="background:#fd0018"></i><b>Spark Red</b><code>#fd0018</code></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>成果物</h2>
+    <p class="sub">配色テーマから始め、抽象表現のポスター、人物を取り込んだポスターへと展開しました。</p>
+    <div class="works">
+
+      <article class="work">
+        <div class="thumb html">theme-sample / sample.html</div>
+        <div>
+          <span class="tag g">THEME</span>
+          <h3>Aosa Wave テーマ</h3>
+          <p class="en">Color theme for documents</p>
+          <p>参照画像の配色を6色のトークンに整理し、週次レポートのサンプルHTMLに適用したテーマです。藍から青へのグラデーション帯を見出し部に使い、赤は大見出し下の線だけに限っています。</p>
+          <ul class="files">
+            <li><a href="../theme-sample/sample.html">theme-sample/sample.html</a></li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="work">
+        <div class="thumb"><img src="../tomoni/tomoni.png" alt="ポスター Confluent Blue"></div>
+        <div>
+          <span class="tag b">POSTER 01</span>
+          <h3>Confluent Blue — 合流する青</h3>
+          <p class="en">Abstract poster · 2400 × 3394 px</p>
+          <p>128本の細い光の筋が、左下でばらばらに生まれて中央で合流し、頂で稲穂になって頭を垂れます。「ともに挑む」を上昇と合流、「ともに実る」を実りの重みで表しました。群れの中に1本だけ赤い筋と赤い穂が混ざります。</p>
+          <p>コピーは明朝体（Shippori Mincho）の縦組みです。ロゴは入れていません。</p>
+          <ul class="files">
+            <li><a href="../tomoni/tomoni.png">tomoni/tomoni.png</a> ・ <a href="../tomoni/tomoni.pdf">.pdf</a></li>
+            <li><a href="../tomoni/philosophy.md">tomoni/philosophy.md</a>（デザインの考え方）</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="work">
+        <div class="thumb"><img src="../tomoni-portrait/tomoni-portrait.png" alt="ポスター Held Light"></div>
+        <div>
+          <span class="tag o">POSTER 02</span>
+          <h3>Held Light — 抱かれる光</h3>
+          <p class="en">Portrait poster · 2400 × 3394 px</p>
+          <p>参照画像の人物を、輪郭を切り抜かずに青へ溶け込ませて右上に配置しました。手前を光の流れが左下から対角に横切り、人物の足元で稲穂となって頭を垂れます。「個は群れに支えられてこそ前を向く」という対比を一枚に収めています。</p>
+          <p>デザインの考え方をレビューで見直し、肖像を右上寄りに、画面の縁にごく淡い白みのグラデーションを加えて再描画済みです。</p>
+          <ul class="files">
+            <li><a href="../tomoni-portrait/tomoni-portrait.png">tomoni-portrait/tomoni-portrait.png</a> ・ <a href="../tomoni-portrait/tomoni-portrait.pdf">.pdf</a></li>
+            <li><a href="../tomoni-portrait/philosophy.md">tomoni-portrait/philosophy.md</a>（デザインの考え方）</li>
+          </ul>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>共通モチーフ</h2>
+    <p class="sub">ポスター2点に通っている設計上の約束事です。</p>
+    <div class="motifs">
+      <div class="motif"><div class="n">128</div><p>光の筋の本数。一本一本は細く、ともに動くことでひとつの流れになります。</p></div>
+      <div class="motif"><div class="n">瑞穂</div><p>筋の先に実る稲穂。社名の由来「みずみずしい稲穂」と、「実るほど頭を垂れる稲穂かな」を重ねています。</p></div>
+      <div class="motif"><div class="n">1 / 128</div><p>群れの中のただ1本の赤。参照画像の赤い差し色を受け継ぎ、目立ちすぎずに確かに存在します。</p></div>
+      <div class="motif"><div class="n">縦</div><p>コピーは明朝体の縦組み。流れの対角線、眼差しの水平線と三方向で画面を支えます。</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="hanabi">
+  <div class="wrap">
+    <h2>生成アート — 夜空に実る</h2>
+    <p class="sub">日本の花火を、共通モチーフの言葉で組み直した生成アートです。シードを変えるたびに違う夜が開きます。考え方は <a href="hanabi-philosophy.md">hanabi-philosophy.md</a> にまとめています。</p>
+    <div class="ga">
+      <div class="sidebar">
+        <h4>Synchronous Bloom</h4>
+        <div class="subtitle">同時に咲く — 割物・八重芯変化菊・冠菊</div>
+
+        <div class="control-section">
+          <h5>Seed</h5>
+          <input type="number" id="ga-seed" class="seed-input" value="128">
+          <div class="seed-controls">
+            <button class="button secondary" id="ga-prev">← Prev</button>
+            <button class="button secondary" id="ga-next">Next →</button>
+          </div>
+          <button class="button tertiary" id="ga-random">↻ Random</button>
+        </div>
+
+        <div class="control-section">
+          <h5>Parameters</h5>
+          <div class="control-group">
+            <label>星の数（1発あたり）</label>
+            <div class="slider-container">
+              <input type="range" id="ga-stars" data-param="stars" min="64" max="256" step="16" value="128">
+              <span class="value-display" id="ga-stars-value">128</span>
+            </div>
+          </div>
+          <div class="control-group">
+            <label>打ち上げ間隔（秒）</label>
+            <div class="slider-container">
+              <input type="range" id="ga-interval" data-param="interval" min="0.4" max="3" step="0.1" value="1.4">
+              <span class="value-display" id="ga-interval-value">1.4</span>
+            </div>
+          </div>
+          <div class="control-group">
+            <label>重力（垂れ方）</label>
+            <div class="slider-container">
+              <input type="range" id="ga-gravity" data-param="gravity" min="0.01" max="0.08" step="0.005" value="0.035">
+              <span class="value-display" id="ga-gravity-value">0.035</span>
+            </div>
+          </div>
+          <div class="control-group">
+            <label>残光</label>
+            <div class="slider-container">
+              <input type="range" id="ga-persist" data-param="persist" min="0.80" max="0.95" step="0.01" value="0.90">
+              <span class="value-display" id="ga-persist-value">0.90</span>
+            </div>
+          </div>
+          <div class="control-group">
+            <label>冠菊の割合</label>
+            <div class="slider-container">
+              <input type="range" id="ga-kamuro" data-param="kamuro" min="0" max="1" step="0.05" value="0.35">
+              <span class="value-display" id="ga-kamuro-value">0.35</span>
+            </div>
+          </div>
+          <div class="control-group">
+            <label>変色のタイミング</label>
+            <div class="slider-container">
+              <input type="range" id="ga-change" data-param="change" min="0.15" max="0.8" step="0.05" value="0.4">
+              <span class="value-display" id="ga-change-value">0.40</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="control-section">
+          <h5>Colors</h5>
+          <div class="color-group">
+            <label>星（変色後）</label>
+            <div class="color-picker-container">
+              <input type="color" id="ga-c-star" data-color="star" value="#3d8bff">
+              <span class="color-value" id="ga-c-star-value">#3d8bff</span>
+            </div>
+          </div>
+          <div class="color-group">
+            <label>芯</label>
+            <div class="color-picker-container">
+              <input type="color" id="ga-c-core" data-color="core" value="#cdd7ed">
+              <span class="color-value" id="ga-c-core-value">#cdd7ed</span>
+            </div>
+          </div>
+          <div class="color-group">
+            <label>冠菊の尾</label>
+            <div class="color-picker-container">
+              <input type="color" id="ga-c-kamuro" data-color="kamuro" value="#f2c26b">
+              <span class="color-value" id="ga-c-kamuro-value">#f2c26b</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="control-section">
+          <h5>Actions</h5>
+          <div class="button-row">
+            <button class="button" id="ga-regen">Regenerate</button>
+            <button class="button secondary" id="ga-reset">Reset</button>
+          </div>
+          <div class="button-row" style="margin-top:8px">
+            <button class="button tertiary" id="ga-download">Download PNG</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="canvas-area">
+        <div id="hanabi-canvas"><div class="loading">Initializing generative art…</div></div>
+        <ul class="ga-legend">
+          <li><b>昇り曲導 = 挑む</b><br>火の粉を引きながら昇る一筋の光。</li>
+          <li><b>同時の開花 = ともに</b><br>すべての星が同じ瞬間に、同じ速さで球をなす。</li>
+          <li><b>冠菊の垂れる尾 = 実る</b><br>金の尾が重みを得て、稲穂のように頭を垂れる。</li>
+          <li><b>1 RED IN 128</b><br>どの一発にも、赤い星がただ一つ。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>制作の流れ</h2>
+    <p class="sub">各ポスターは「デザインの考え方（philosophy.md）を書く → 描画する → 磨き込む」の順で制作しています。</p>
+    <ol class="steps">
+      <li><b>配色の抽出</b><br>参照画像から6色を抽出し、Aosa Wave テーマとして文書に適用。</li>
+      <li><b>ポスター01：抽象表現</b><br>「合流する青」の考え方を定め、光の筋と稲穂だけで構成。英語で書いた考え方を日本語に翻訳。</li>
+      <li><b>ポスター02：人物の取り込み</b><br>参照画像の人物を青に溶け込ませ、光の流れと重ねて構成。</li>
+      <li><b>レビューと再描画</b><br>見直された考え方に沿って、肖像の位置と画面周辺のグラデーションを調整。</li>
+      <li><b>生成アート：花火</b><br>日本の花火（割物・八重芯変化菊・冠菊）を、128・一点の赤・頭を垂れる稲穂のモチーフで再構成し、p5.js で実装。</li>
+    </ol>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>利用上の注意</h2>
+    <div class="note">
+      <p style="margin:0">本プロジェクトの成果物は<strong>社内のデザイン検討用の試作</strong>です。</p>
+      <ul>
+        <li>ポスター02の人物写真はキャンペーン広告からの流用です。著作権・肖像権の使用範囲があるため、掲示・配布・社外共有の前に広報／ブランド担当の許諾確認が必要です。</li>
+        <li>ロゴはどの成果物にも入れていません。追加する場合は正式なロゴデータとガイドラインに従ってください。</li>
+        <li>フォントは Shippori Mincho・DM Mono（いずれも OFL）を使用しています。</li>
+        <li>生成アートは p5.js を CDN から読み込むため、表示にはインターネット接続が必要です。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>次のステップ（候補）</h2>
+    <ol class="next">
+      <li>関係者レビューで、抽象版（01）と人物版（02）の方向性を選ぶ</li>
+      <li>人物写真・コピー・ロゴの使用可否をブランド担当と確認する</li>
+      <li>採用案を掲示サイズ（B1／B2 など）や横型バナーへ展開する</li>
+    </ol>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">design-proposals / aosa-project · 2026-10-31</div>
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════
+// Synchronous Bloom — 同時に咲く
+// Japanese warimono fireworks: every star leaves the same centre at the same
+// speed (Fibonacci sphere), double-core colour exchange (八重芯変化), and
+// kamuro gold tails that bow under gravity. One red star in every burst.
+// ═══════════════════════════════════════════════════════════════════════
+(function () {
+  const W = 1200, H = 800, HORIZON = H * 0.86;
+  const RED = [253, 0, 24];
+  const WHITE = [246, 244, 255];
+  const GOLDEN = Math.PI * (3 - Math.sqrt(5));
+
+  const DEFAULTS = {
+    seed: 128, stars: 128, interval: 1.4, gravity: 0.035, persist: 0.90,
+    kamuro: 0.35, change: 0.4,
+    colors: { star: '#3d8bff', core: '#cdd7ed', kamuro: '#f2c26b' }
+  };
+  let params = structuredClone(DEFAULTS);
+
+  const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+  const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+
+  const sketch = new p5(function (p) {
+    let sky, light, rockets, stars, embers, frame, nextLaunch;
+
+    p.setup = function () {
+      const c = p.createCanvas(W, H);
+      c.parent('hanabi-canvas');
+      p.pixelDensity(1);
+      document.querySelector('#hanabi-canvas .loading').remove();
+      sky = buildSky();
+      light = p.createGraphics(W, H);
+      light.pixelDensity(1);
+      init();
+      // pause while scrolled out of view
+      new IntersectionObserver(([e]) => e.isIntersecting ? p.loop() : p.noLoop())
+        .observe(document.getElementById('hanabi-canvas'));
+    };
+
+    function buildSky() {
+      const g = p.createGraphics(W, H);
+      g.pixelDensity(1);
+      const top = [11, 6, 75], mid = [1, 28, 107], glow = [1, 80, 197];
+      for (let y = 0; y < H; y++) {
+        let col;
+        if (y < HORIZON) {
+          const t = y / HORIZON;
+          col = mix(top, mid, t * t);
+          col = mix(col, glow, Math.max(0, (t - 0.75) / 0.25) * 0.35);
+        } else {
+          const t = (y - HORIZON) / (H - HORIZON);
+          col = mix([4, 22, 92], top, t);           // the river
+        }
+        g.stroke(col[0], col[1], col[2]);
+        g.line(0, y, W, y);
+      }
+      g.stroke(120, 160, 230, 70);
+      g.line(0, HORIZON, W, HORIZON);
+      return g;
+    }
+
+    function init() {
+      p.randomSeed(params.seed);
+      p.noiseSeed(params.seed);
+      rockets = []; stars = []; embers = [];
+      frame = 0;
+      nextLaunch = 10;
+      light.blendMode(p.BLEND);
+      light.background(0);
+      p.blendMode(p.BLEND);
+      p.image(sky, 0, 0);
+    }
+    p.ga_init = init;
+
+    // ---------------------------------------------------------- launch & burst
+    function launch() {
+      const x = p.random(W * 0.14, W * 0.86);
+      const apex = p.random(H * 0.16, H * 0.42);
+      const r = p.random();
+      const type = r < params.kamuro ? 'kamuro' : (r < params.kamuro + (1 - params.kamuro) / 2 ? 'kiku' : 'botan');
+      rockets.push({ x, y: HORIZON, x0: x, vy: -Math.sqrt(2 * 0.06 * (HORIZON - apex)), t: 0,
+                     phase: p.random(p.TWO_PI), type, size: p.random(0.8, 1.15) });
+    }
+
+    function burst(rk) {
+      const n = params.stars;
+      const rot = p.random(p.TWO_PI);
+      const speed = 6.2 * rk.size;
+      const kamuro = rk.type === 'kamuro';
+      const redIndex = Math.floor(p.random(n));
+      const starCol = hex(params.colors.star), coreCol = hex(params.colors.core), goldCol = hex(params.colors.kamuro);
+      const life = kamuro ? 190 : 110;
+      // outer shell: Fibonacci sphere projected to the picture plane
+      for (let i = 0; i < n; i++) {
+        const yv = 1 - 2 * (i + 0.5) / n, rr = Math.sqrt(1 - yv * yv), th = i * GOLDEN;
+        let dx = Math.cos(th) * rr, dy = yv;
+        const c = Math.cos(rot), s = Math.sin(rot);
+        [dx, dy] = [dx * c - dy * s, dx * s + dy * c];
+        const v = speed * p.random(0.985, 1.015);
+        const red = i === redIndex;
+        stars.push({
+          x: rk.x, y: rk.y, px: rk.x, py: rk.y, vx: dx * v, vy: dy * v,
+          age: 0, life: life * p.random(0.92, 1.08),
+          drag: kamuro ? 0.955 : 0.968,
+          from: red ? RED : (kamuro ? goldCol : WHITE),
+          to: red ? RED : (kamuro ? goldCol : starCol),
+          type: rk.type, weight: red ? 2.6 : (kamuro ? 1.6 : 2.0), flick: kamuro && !red
+        });
+      }
+      // inner core (芯): smaller ring that changes the opposite way
+      if (!kamuro) {
+        const m = Math.round(n / 4);
+        for (let i = 0; i < m; i++) {
+          const a = rot + i / m * p.TWO_PI;
+          const v = speed * 0.46;
+          stars.push({
+            x: rk.x, y: rk.y, px: rk.x, py: rk.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v,
+            age: 0, life: life * 0.8, drag: 0.968, from: starCol, to: coreCol,
+            type: 'core', weight: 1.8, flick: false
+          });
+        }
+      }
+    }
+
+    // ---------------------------------------------------------- draw loop
+    p.draw = function () {
+      frame++;
+      // the light lives in its own buffer and fades toward black
+      light.blendMode(p.BLEND);
+      light.noStroke();
+      light.fill(0, (1 - params.persist) * 255);
+      light.rect(0, 0, W, H);
+
+      if (frame >= nextLaunch) {
+        launch();
+        if (p.random() < 0.15) launch();      // occasional pair
+        nextLaunch = frame + params.interval * 60 * p.random(0.7, 1.3);
+      }
+
+      light.blendMode(p.ADD);
+
+      // rising tails (昇り曲導)
+      for (let i = rockets.length - 1; i >= 0; i--) {
+        const rk = rockets[i];
+        const px = rk.x, py = rk.y;
+        rk.t++;
+        rk.vy += 0.06;
+        rk.y += rk.vy;
+        rk.x = rk.x0 + Math.sin(rk.t * 0.22 + rk.phase) * 1.4;
+        light.stroke(255, 236, 200, 200); light.strokeWeight(2);
+        light.line(px, py, rk.x, rk.y);
+        if (rk.t % 2 === 0) embers.push({ x: rk.x, y: rk.y, vx: p.random(-0.4, 0.4), vy: p.random(0.2, 0.8), age: 0, life: 26 });
+        if (rk.vy >= 0) { burst(rk); rockets.splice(i, 1); }
+      }
+
+      // stars
+      const g = params.gravity;
+      for (let i = stars.length - 1; i >= 0; i--) {
+        const s = stars[i];
+        s.px = s.x; s.py = s.y;
+        s.vx *= s.drag; s.vy = s.vy * s.drag + g * (s.type === 'kamuro' ? 1.25 : 1);
+        s.x += s.vx; s.y += s.vy;
+        s.age++;
+        const t = s.age / s.life;
+        if (t >= 1 || s.y > HORIZON) { stars.splice(i, 1); continue; }
+        const k = Math.min(1, Math.max(0, (t - params.change) / 0.12));
+        const col = mix(s.from, s.to, k);
+        let a = 255 * Math.pow(1 - t, 1.2);
+        if (s.flick) a *= 0.6 + 0.4 * Math.sin(s.age * 0.9 + i);   // kamuro glitter
+        light.stroke(col[0], col[1], col[2], a);
+        light.strokeWeight(s.weight);
+        light.line(s.px, s.py, s.x, s.y);
+        light.stroke(col[0], col[1], col[2], a * 0.18);
+        light.strokeWeight(s.weight * 4);
+        light.point(s.x, s.y);
+        if (s.type === 'kiku' && s.age % 3 === 0 && t < 0.7)
+          embers.push({ x: s.x, y: s.y, vx: s.vx * 0.2, vy: s.vy * 0.2, age: 0, life: 22, col });
+        // reflection on the river
+        const ry = HORIZON + (HORIZON - s.y) * 0.22;
+        if (ry < H) {
+          const rx = s.x + Math.sin(ry * 0.25 + frame * 0.08) * 2;
+          light.stroke(col[0], col[1], col[2], a * 0.16);
+          light.strokeWeight(1.4);
+          light.line(rx, ry, rx, ry + 4);
+        }
+      }
+
+      // embers
+      light.strokeWeight(1.3);
+      for (let i = embers.length - 1; i >= 0; i--) {
+        const e = embers[i];
+        e.age++;
+        if (e.age > e.life) { embers.splice(i, 1); continue; }
+        e.vy += g * 0.5; e.x += e.vx; e.y += e.vy;
+        const c = e.col || [255, 214, 160];
+        light.stroke(c[0], c[1], c[2], 160 * (1 - e.age / e.life));
+        light.point(e.x, e.y);
+      }
+
+      // compose: a clean sky every frame, light added on top
+      p.blendMode(p.BLEND);
+      p.image(sky, 0, 0);
+      p.blendMode(p.ADD);
+      p.image(light, 0, 0);
+      p.blendMode(p.BLEND);
+    };
+
+    p.ga_download = () => p.saveCanvas('hanabi-seed-' + params.seed, 'png');
+  }, document.getElementById('hanabi-canvas'));
+
+  // ---------------------------------------------------------- UI wiring
+  const $ = id => document.getElementById(id);
+  const restart = () => { if (sketch.ga_init) sketch.ga_init(); };
+  const DIGITS = { stars: 0, interval: 1, gravity: 3, persist: 2, kamuro: 2, change: 2 };
+  const fmt = (k, v) => v.toFixed(DIGITS[k]);
+
+  function syncUI() {
+    $('ga-seed').value = params.seed;
+    document.querySelectorAll('.ga [data-param]').forEach(el => {
+      const k = el.dataset.param;
+      el.value = params[k];
+      $(el.id + '-value').textContent = fmt(k, params[k]);
+    });
+    document.querySelectorAll('.ga [data-color]').forEach(el => {
+      el.value = params.colors[el.dataset.color];
+      $(el.id + '-value').textContent = el.value;
+    });
+  }
+
+  document.querySelectorAll('.ga [data-param]').forEach(el => el.addEventListener('input', () => {
+    const k = el.dataset.param;
+    params[k] = parseFloat(el.value);
+    $(el.id + '-value').textContent = fmt(k, params[k]);
+    restart();
+  }));
+  document.querySelectorAll('.ga [data-color]').forEach(el => el.addEventListener('input', () => {
+    params.colors[el.dataset.color] = el.value;
+    $(el.id + '-value').textContent = el.value;
+    restart();
+  }));
+
+  function setSeed(v) {
+    if (!Number.isFinite(v) || v < 1) { syncUI(); return; }
+    params.seed = Math.floor(v);
+    $('ga-seed').value = params.seed;
+    restart();
+  }
+  $('ga-seed').addEventListener('change', e => setSeed(parseInt(e.target.value, 10)));
+  $('ga-prev').addEventListener('click', () => setSeed(Math.max(1, params.seed - 1)));
+  $('ga-next').addEventListener('click', () => setSeed(params.seed + 1));
+  $('ga-random').addEventListener('click', () => setSeed(Math.floor(Math.random() * 999999) + 1));
+  $('ga-regen').addEventListener('click', restart);
+  $('ga-reset').addEventListener('click', () => { params = structuredClone(DEFAULTS); syncUI(); restart(); });
+  $('ga-download').addEventListener('click', () => sketch.ga_download());
+
+  syncUI();
+})();
+</script>
+
+</body>
+</html>
