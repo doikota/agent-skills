@@ -12,7 +12,7 @@
   "containerEnv": {
     "PYTHONUTF8": "1"
   },
-  "postCreateCommand": "python -m venv .venv && .venv/bin/python -m pip install -r .claude/skills/pdf-sales-report/requirements.txt && npm --prefix .claude/skills/pptx-ai-agent-deck ci",
+  "postCreateCommand": "python -m venv .venv && .venv/bin/python -m pip install -r requirements-dev.txt && .venv/bin/python -m playwright install --with-deps chromium && npm --prefix .claude/skills/pptx-ai-agent-deck ci",
   "customizations": {
     "vscode": {
       "extensions": [

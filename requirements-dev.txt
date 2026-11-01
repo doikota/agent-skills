@@ -1,0 +1,3 @@
+-r .claude/skills/pdf-sales-report/requirements.txt
+-r mcp/open-meteo-weather/requirements-dev.txt
+playwright
