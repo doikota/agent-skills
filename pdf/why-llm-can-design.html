@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<title>LLMはなぜ「見やすい資料」を作れるのか</title>
+<style>
+@font-face{font-family:"DocFont";src:url("file:///workspaces/agent-skills/.claude/skills/pdf-sales-report/assets/fonts/meiryo.ttc");font-weight:400}
+@font-face{font-family:"DocFont";src:url("file:///workspaces/agent-skills/.claude/skills/pdf-sales-report/assets/fonts/meiryob.ttc");font-weight:700}
+@page{size:A4;margin:0}
+:root{--ink:#1f2328;--sub:#59636e;--acc:#1f6f8b;--tint:#eaf2f5;--warm:#b4461b;--warmt:#fbefe9;--line:#cfd6db;--gray:#f3f4f5}
+*{box-sizing:border-box}
+html,body{margin:0;background:#fff;color:var(--ink);font-family:"DocFont","IPAPGothic",sans-serif;font-size:10pt;line-height:1.75}
+.page{width:210mm;height:297mm;padding:17mm 18mm 16mm;position:relative;overflow:hidden;page-break-after:always;break-after:page}
+.page:last-child{page-break-after:auto}
+.pn{position:absolute;bottom:8mm;left:18mm;right:18mm;font-size:8pt;color:var(--sub);display:flex;justify-content:space-between}
+h1{font-size:22pt;line-height:1.35;margin:0 0 4mm}
+h2{font-size:15pt;line-height:1.4;margin:0 0 1mm}
+.kicker{font-size:8.5pt;color:var(--acc);font-weight:700;letter-spacing:.08em;margin-bottom:1mm}
+.lead{color:var(--sub);margin:0 0 5mm}
+h3{font-size:11pt;margin:5mm 0 1.5mm;color:var(--acc)}
+p{margin:0 0 2.5mm}
+.box{background:var(--tint);border-radius:2mm;padding:3.5mm 4.5mm;margin:3mm 0}
+.box.warm{background:var(--warmt)}
+.box.gray{background:var(--gray)}
+.box b.t{display:block;margin-bottom:1mm;color:var(--acc)}
+.box.warm b.t{color:var(--warm)}
+.eq{font-family:"Times New Roman","DocFont",serif;font-size:12pt;text-align:center;margin:3mm 0;padding:2.5mm;background:var(--gray);border-radius:2mm}
+.eq i{font-style:italic}
+code,pre{font-family:"DejaVu Sans Mono","DocFont",monospace;font-size:8.3pt}
+pre{background:var(--gray);border-radius:2mm;padding:3mm 4mm;margin:2.5mm 0;line-height:1.5;white-space:pre-wrap}
+code{background:var(--gray);padding:0 1mm;border-radius:1mm}
+figure{margin:3mm 0}
+figcaption{font-size:8.5pt;color:var(--sub);margin-top:1mm}
+svg{display:block;width:100%;height:auto}
+svg text{font-family:"DocFont","IPAPGothic",sans-serif}
+table{border-collapse:collapse;width:100%;font-size:9pt;margin:2.5mm 0}
+th,td{border-bottom:1px solid var(--line);padding:1.6mm 2mm;text-align:left;vertical-align:top}
+th{background:var(--gray)}
+ul,ol{margin:0 0 2.5mm;padding-left:5.5mm}
+li{margin-bottom:1mm}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:5mm}
+.small{font-size:8.5pt;color:var(--sub)}
+.ans{border:1.5px solid var(--acc);border-radius:2mm;padding:4mm 5mm;margin:4mm 0}
+.ans ol{margin:0}
+.tight td,.tight th{padding:.7mm 2mm}
+body{counter-reset:pg fig}
+.page{counter-increment:pg}
+.pn .no::after{content:counter(pg)}
+figure{counter-increment:fig}
+figcaption::before{content:"図" counter(fig) "　"}
+.anno{font-size:8.3pt;color:var(--sub);margin:-1mm 0 3mm}
+.anno td{padding:.6mm 2mm;border-bottom:1px dotted var(--line)}
+.anno code{font-size:7.8pt}
+.note{background:var(--gray);border-radius:2mm;padding:2.5mm 4mm;font-size:8.6pt;line-height:1.65;margin:2.5mm 0}
+.ref li{font-size:8.6pt;margin-bottom:1.2mm}
+</style></head><body>
+
+<!-- ===================== 1 ===================== -->
+<section class="page">
+<div class="kicker">解説資料 ／ Agent Skillsの裏側</div>
+<h1>LLMはなぜ<br>「見やすい資料」を作れるのか</h1>
+<p class="lead">次トークン予測しかしないはずのモデルが、配置やバランスの整ったスライドを仕上げられる理由</p>
+
+<h3>この資料の前提</h3>
+<p>読み手は、Transformerが学習の末に「次に来るトークンを確率的に選ぶ」原理を理解しており、MCP・RAG・AIエージェント（推論はLLMに任せ、道具としてToolを用意する）・Agent Skillsの使い方と定義の仕方も知っている方を想定しています。そのうえで残る疑問はこれです。</p>
+<div class="box warm"><b class="t">問い</b>
+文章しか出せないはずのLLMが、なぜ人間が見て分かりやすい配置を考えられるのか。文章をどうやって「イメージ」に変換しているのか。</div>
+
+<h3>先に結論</h3>
+<div class="ans" style="margin:3mm 0;padding:3mm 5mm"><ol style="line-height:1.65">
+<li><b>LLMは絵を描いていない。</b>書いているのは「どこに・何を・どの大きさで置くか」を記したテキスト（コード）であり、画像にするのはレンダラ（PowerPoint、ブラウザなど）です。</li>
+<li><b>レイアウトは言語として学べる。</b>HTML/CSS・SVG・スライドのXMLなど、見た目を記述したテキストが学習データに大量にあり、座標や大きさも「次トークン」として予測できます。</li>
+<li><b>配置の整合は、文脈内の数値の参照と計算で取っている。</b>スライド幅・余白・隣の要素の位置を注意機構で参照し、足し引きで矛盾のない値を出します。</li>
+<li><b>「見やすさ」の知識は、学習データと事後学習、そしてスキルが補う。</b>スキルは余白・文字サイズ・失敗例を明文化し、出力の確率分布を「人が見やすい側」へ寄せます。</li>
+<li><b>仕上げは「AIの目」と検証ループ。</b>画像をトークン列に変換して読めるマルチモーダルなモデルは、描画結果を見て、はみ出しや重なりを見つけて直せます。最後の確認は人間の目です。</li>
+</ol></div>
+
+<h3>読み進め方</h3>
+<table class="tight">
+<tr><th style="width:18%">ページ</th><th>内容</th></tr>
+<tr><td>2–4</td><td>誤解をほどく：LLMは「設計図」を書いている／レイアウトは言語／ラベルなしで良し悪しを学ぶ仕組み</td></tr>
+<tr><td>5–6</td><td>次トークン予測で座標が決まる仕組みと、LLM内部の空間の表現</td></tr>
+<tr><td>7–8</td><td>「良いデザイン」の知識はどこから来るか、スキルが果たす役割</td></tr>
+<tr><td>9–11</td><td>LLMの「目」：画像を読む仕組み、検証ループ、「不自然さ」の判定方法</td></tr>
+<tr><td>12</td><td>実例：前回のスライド作成で起きたこと（見られないと何が困るか）</td></tr>
+<tr><td>13</td><td>対比：画像生成AI（拡散モデル）は本当に「描いている」</td></tr>
+<tr><td>14</td><td>全体のまとめ図と参考文献</td></tr>
+</table>
+<div class="pn"><span>LLMはなぜ「見やすい資料」を作れるのか</span><span class="no"></span></div>
+</section>
+
+<!-- ===================== 2 ===================== -->
+<section class="page">
+<div class="kicker">1. 誤解をほどく</div>
+<h2>LLMは絵を描かず、「設計図」を書いている</h2>
+<p class="lead">文章からイメージへの変換は、LLMの中で一度に起きているわけではありません。</p>
+
+<p>「LLMがスライドを作る」と聞くと、LLMが頭の中に絵を思い浮かべ、それを出力しているように感じます。しかし、Claude CodeがAgent Skills（pptxスキル）を使ってPowerPointを作るとき、LLMが出力しているのは<b>テキストだけ</b>です。具体的には、スライド生成ライブラリ（pptxgenjs）を呼び出すJavaScriptのコードです。</p>
+
+<figure>
+<svg viewBox="0 0 680 190">
+ <defs><marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#59636e"/></marker></defs>
+ <g font-size="13">
+ <rect x="0" y="40" width="130" height="90" rx="8" fill="#f3f4f5"/>
+ <text x="65" y="72" text-anchor="middle" font-weight="700">文章</text>
+ <text x="65" y="94" text-anchor="middle" font-size="11" fill="#59636e">「スキルの2つの</text>
+ <text x="65" y="110" text-anchor="middle" font-size="11" fill="#59636e">意味を並べて」</text>
+ <line x1="132" y1="85" x2="170" y2="85" stroke="#59636e" stroke-width="2" marker-end="url(#ar)"/>
+ <rect x="172" y="40" width="150" height="90" rx="8" fill="#eaf2f5" stroke="#1f6f8b" stroke-width="2"/>
+ <text x="247" y="72" text-anchor="middle" font-weight="700" fill="#1f6f8b">LLM</text>
+ <text x="247" y="94" text-anchor="middle" font-size="11">次トークン予測</text>
+ <text x="247" y="110" text-anchor="middle" font-size="11">（テキストのみ）</text>
+ <line x1="324" y1="85" x2="362" y2="85" stroke="#59636e" stroke-width="2" marker-end="url(#ar)"/>
+ <rect x="364" y="40" width="150" height="90" rx="8" fill="#f3f4f5"/>
+ <text x="439" y="66" text-anchor="middle" font-weight="700">設計図（コード）</text>
+ <text x="439" y="88" text-anchor="middle" font-size="10" font-family="DejaVu Sans Mono">x: 0.5, y: 2.95</text>
+ <text x="439" y="104" text-anchor="middle" font-size="10" font-family="DejaVu Sans Mono">w: 4.05, h: 1.85</text>
+ <text x="439" y="120" text-anchor="middle" font-size="10" font-family="DejaVu Sans Mono">fontSize: 14</text>
+ <line x1="516" y1="85" x2="554" y2="85" stroke="#59636e" stroke-width="2" marker-end="url(#ar)"/>
+ <rect x="556" y="40" width="124" height="90" rx="8" fill="#fff" stroke="#cfd6db"/>
+ <rect x="566" y="78" width="48" height="32" rx="3" fill="#f3f4f5"/>
+ <rect x="622" y="78" width="48" height="32" rx="3" fill="#eaf2f5" stroke="#1f6f8b"/>
+ <rect x="566" y="54" width="70" height="8" rx="2" fill="#1f2328"/>
+ <text x="618" y="148" text-anchor="middle" font-size="11" fill="#59636e">画像（スライド）</text>
+ </g>
+ <text x="247" y="22" text-anchor="middle" font-size="12" fill="#1f6f8b" font-weight="700">LLMの仕事はここまで</text>
+ <rect x="168" y="30" width="350" height="110" rx="10" fill="none" stroke="#1f6f8b" stroke-dasharray="5 4"/>
+ <text x="618" y="22" text-anchor="middle" font-size="12" fill="#59636e" font-weight="700">レンダラの仕事</text>
+ <text x="340" y="180" text-anchor="middle" font-size="11" fill="#59636e">文章 → 設計図への変換はLLM、設計図 → ピクセルへの変換はPowerPointやブラウザ</text>
+</svg>
+<figcaption>「文章をイメージに変換する」処理は2段に分かれている</figcaption>
+</figure>
+
+<p>下は前回の勉強会スライド1枚目で、実際に私が書いたコードの一部です。左右2枚のカードと矢印を置いています。</p>
+<pre>box(s, 0.5,  2.95, 4.05, 1.85, C.gray);                 // 左カード
+s.addShape(RIGHT_ARROW, { x: 4.7, y: 3.65, w: 0.6, h: 0.45 }); // 矢印
+box(s, 5.45, 2.95, 4.05, 1.85, C.tint, { line: C.accent }); // 右カード
+s.addText("今日の「スキル」＝ Agent Skills", { x: 5.7, y: 3.1, w: 3.7, fontSize: 16, bold: true });</pre>
+<div class="anno"><b>引数の読み方</b>（単位はインチ。スライドは幅10×高さ5.625、位置は左上の角を基準に測る）
+<table>
+<tr><td style="width:36%"><code>box(s, x, y, w, h, 色, 枠)</code></td><td>角丸の四角を描く自作の補助関数。<code>s</code>＝描くスライド、<code>x, y</code>＝左端・上端からの距離、<code>w, h</code>＝幅・高さ、<code>C.gray</code>など＝塗り色、<code>{ line: … }</code>＝枠線の色</td></tr>
+<tr><td><code>addShape(種類, { x, y, w, h })</code></td><td>図形を置く。<code>RIGHT_ARROW</code>＝右向きの矢印</td></tr>
+<tr><td><code>addText(文字, { x, y, w, fontSize, bold })</code></td><td>文字を置く。<code>fontSize</code>＝文字サイズ（pt）、<code>bold: true</code>＝太字</td></tr>
+</table></div>
+<p>ここに「絵」はなく、あるのは数値と文字列だけです。この数値列をPowerPointが読み、ピクセルに変換して初めて、人間が見る「スライド」になります。</p>
+
+<div class="box"><b class="t">言い換えると</b>
+LLMにとっての「イメージに変換する」とは、<b>見た目を記述するテキストを生成すること</b>です。そうであれば、問いは「なぜLLMは見た目を記述するテキストを上手に書けるのか」に置き換えられます。これは、次トークン予測の延長で説明できる問題です。</div>
+<div class="pn"><span>LLMはなぜ「見やすい資料」を作れるのか</span><span class="no"></span></div>
+</section>
+
+<!-- ===================== 3 ===================== -->
+<section class="page">
+<div class="kicker">1. 誤解をほどく</div>
+<h2>レイアウトは「言語」である</h2>
+<p class="lead">人類は、見た目をテキストで記述する方法を数十年かけて大量に作ってきました。</p>
+
+<p>Webページ、図、スライド、文書の多くは、内部では<b>見た目を記述するテキスト</b>として保存されています。同じ「青い角丸の箱に文字を置く」も、形式ごとに次のように書けます。</p>
+<table>
+<tr><th style="width:24%">形式</th><th>同じ内容の記述例</th></tr>
+<tr><td>SVG</td><td><code>&lt;rect x="40" y="20" width="200" height="80" rx="8" fill="#eaf2f5"/&gt;</code></td></tr>
+<tr><td>HTML/CSS</td><td><code>&lt;div style="width:200px;padding:16px;border-radius:8px;background:#eaf2f5"&gt;</code></td></tr>
+<tr><td>PowerPoint（XML）</td><td><code>&lt;a:off x="457200" y="182880"/&gt;&lt;a:ext cx="1828800" .../&gt;</code>（単位EMU）</td></tr>
+<tr><td>pptxgenjs</td><td><code>addShape(ROUNDED_RECTANGLE, { x: 0.5, y: 0.2, w: 2, h: 0.8 })</code></td></tr>
+</table>
+
+<h3>学習データには「コード」と「その見た目の説明」がセットで含まれる</h3>
+<p>Web上には、コードとその見た目についての言葉が一緒に載った文書が無数にあります。たとえば次のようなものです。</p>
+<ul>
+<li>CSSのチュートリアル：「<code>margin: 0 auto</code> で中央寄せになります」</li>
+<li>Q&amp;Aサイト：「ボタンが右にはみ出します」→「<code>box-sizing: border-box</code> を指定してください」</li>
+<li>デザインの解説記事：「見出しは本文の2倍以上の大きさにすると階層が伝わる」</li>
+<li>GitHub上の大量のHTML・SVG・スライド生成コードと、そのREADMEやコメント</li>
+</ul>
+<p>次トークン予測の学習は、これらの文書で「この記述の次には何が来るか」を当てる訓練です。損失を下げるには、<b>コードの数値が見た目とどう対応するか</b>（大きいwは幅が広い、yが増えると下に移る、など）を内部に表現しておくのが有利です。こうしてモデルは、絵を一度も「見ずに」、見た目と記述の対応関係を獲得します。</p>
+
+<div class="box gray"><b class="t">有名な例：テキストだけのモデルがユニコーンを描いた</b>
+2023年の論文 “Sparks of Artificial General Intelligence” では、画像を扱わない段階のGPT-4に「TikZ（LaTeXの作図言語）でユニコーンを描いて」と依頼しました。GPT-4は、胴体・脚・角を図形の組み合わせとして記述するコードを出力しました。さらに角を消したコードを渡すと、正しい位置に角を描き足しています。完璧な絵ではありませんが、<b>言葉だけの学習から「形と配置」の知識が生まれる</b>ことを示した例として広く知られています。</div>
+
+<p class="small">※ Claudeの学習データの具体的な内訳は公開されていません。ここでは、一般的な大規模言語モデルが公開Webやコードで学習しているという事実に基づいて説明しています。</p>
+<div class="pn"><span>LLMはなぜ「見やすい資料」を作れるのか</span><span class="no"></span></div>
+</section>
+
+<!-- ===================== NEW 4 ===================== -->
+<section class="page">
+<div class="kicker">1. 誤解をほどく</div>
+<h2>ラベルのないデータから、どうやって「良し悪し」を学ぶのか</h2>
+<p class="lead">学習データの1件1件に「このデザインは見やすい／見にくい」という採点が付いているわけではありません。</p>
+<p>Web上のHTMLやスライドのコードには、それが画像として優れているかどうかの採点は付いていません。それでも良し悪しの区別が身につくのは、主に次の4つの理由によります。</p>
+
+<h3>① 良し悪しは「周りの文章」に書かれている</h3>
+<p>評価はデータに<b>付与</b>されていなくても、多くの場合データの中に<b>書かれて</b>います。Q&amp;Aサイトの質問と回答、デザインの添削記事、「改善前・改善後」の比較記事などがその例です。</p>
+<figure>
+<svg viewBox="0 0 680 150">
+ <rect x="0" y="0" width="320" height="100" rx="8" fill="#fbefe9"/>
+ <text x="14" y="22" font-size="11.5" font-weight="700" fill="#b4461b">質問（見にくい例）</text>
+ <text x="14" y="46" font-size="11.5">「表の文字が詰まって読みにくいです」</text>
+ <rect x="14" y="58" width="292" height="28" rx="4" fill="#fff"/>
+ <text x="24" y="77" font-size="11" font-family="DejaVu Sans Mono">td { padding: 0 }</text>
+ <rect x="360" y="0" width="320" height="100" rx="8" fill="#eaf2f5"/>
+ <text x="374" y="22" font-size="11.5" font-weight="700" fill="#1f6f8b">回答（改善例）</text>
+ <text x="374" y="46" font-size="11.5">「余白を付けると読みやすくなります」</text>
+ <rect x="374" y="58" width="292" height="28" rx="4" fill="#fff"/>
+ <text x="384" y="77" font-size="11" font-family="DejaVu Sans Mono">td { padding: 8px }</text>
+ <text x="340" y="56" text-anchor="middle" font-size="18" fill="#59636e">→</text>
+ <text x="340" y="132" text-anchor="middle" font-size="11.5">モデルが学ぶ対応：<tspan font-family="DejaVu Sans Mono">padding: 0</tspan> ↔「読みにくい」　／　<tspan font-family="DejaVu Sans Mono">padding: 8px</tspan> ↔「読みやすい」</text>
+</svg>
+<figcaption>コードと評価の言葉が、同じ文書の中に並んで現れる（暗黙のラベル）</figcaption>
+</figure>
+<p>次トークン予測は、コードとその周りの評価語（「読みにくい」「すっきりした」）をまとめて予測する訓練です。その結果、モデルの中に<b>評価語を条件にしたコードの分布</b>ができます。依頼文に「見やすく」と書くと、「見やすい」という言葉と一緒に現れやすかったコードの確率が上がります。</p>
+<div class="eq"><i>P</i>( コード | 「見やすい表を作って」 )　≠　<i>P</i>( コード )</div>
+
+<h3>② たくさん採用されたものほど確率が高くなる</h3>
+<p>公式テンプレートや広く使われるデザイン部品（CSSフレームワークなど）は、プロが作ったものが何万ものサイトに複製されます。一方、駄作は散発的で、パターンもばらばらです。そのため、確率の高い領域には「多くの人に採用され続けた無難な良作」が集まります。<b>採用の多さが、自然な投票の役割を果たしている</b>のです。ただし、これは「無難」であって「最良」ではありません（p.7）。</p>
+
+<h3>③ 学習前にデータを選別している</h3>
+<p>一般に開発元は、学習の前に重複や低品質な文書を取り除きます。Claudeの具体的な選別方法は公開されていませんが、壊れたページや意味をなさない文書は減らされていると考えるのが自然です。</p>
+
+<h3>④ 足りない分を、人の選好とスキルで補う</h3>
+<p>①〜③で得られるのは「だいたい良い」までです。その先は、人間の選好による調整（p.7のRLHF）と、明示的な基準を与えるスキル（p.8）が補います。</p>
+<div class="pn"><span>LLMはなぜ「見やすい資料」を作れるのか</span><span class="no"></span></div>
+</section>
+
+<!-- ===================== 4 ===================== -->
+<section class="page">
+<div class="kicker">2. 座標はどう決まるか</div>
+<h2>次トークン予測で「4.05」が選ばれる理由</h2>
+<p class="lead">座標の数値も、ほかの単語と同じく確率分布から選ばれる「次トークン」です。</p>
+
+<p>GPT-2で学んだ通り、LLMは位置<i>t</i>の隠れ状態 <i>h<sub>t</sub></i> から、次のトークンの確率を出します。</p>
+<div class="eq"><i>P</i>(<i>x<sub>t+1</sub></i> | <i>x</i><sub>1</sub>, …, <i>x<sub>t</sub></i>) = softmax( <i>W</i><sub>out</sub> <i>h<sub>t</sub></i> )</div>
+<p>スライドのコードを書いている途中で <code>box(s, 5.45, 2.95, </code> まで来たとき、次の候補には数値トークンが並びます。どの数値が高い確率になるかを決めるのは、<b>注意機構が参照する文脈</b>です。</p>
+
+<figure>
+<svg viewBox="0 0 680 230">
+ <text x="0" y="16" font-size="12" font-weight="700">文脈（注意機構が参照する部分を強調）</text>
+ <rect x="0" y="26" width="680" height="70" rx="6" fill="#f3f4f5"/>
+ <g font-family="DejaVu Sans Mono" font-size="11.5">
+  <text x="12" y="48">pres.layout = "LAYOUT_16x9";  <tspan fill="#1f6f8b" font-weight="700">// 幅10インチ</tspan></text>
+  <text x="12" y="66">box(s, <tspan fill="#b4461b" font-weight="700">0.5</tspan>, 2.95, <tspan fill="#b4461b" font-weight="700">4.05</tspan>, 1.85, …);   // 左カード</text>
+  <text x="12" y="84">box(s, 5.45, 2.95, <tspan fill="#1f6f8b">▮ 次はここ</tspan></text>
+ </g>
+ <text x="0" y="120" font-size="12" font-weight="700">次トークンの確率（説明用の架空の値）</text>
+ <g font-size="11">
+  <text x="70" y="146" text-anchor="end" font-family="DejaVu Sans Mono">4.05</text><rect x="80" y="135" width="372" height="15" fill="#1f6f8b"/><text x="458" y="147">0.62　左カードと同じ幅（対称）</text>
+  <text x="70" y="168" text-anchor="end" font-family="DejaVu Sans Mono">4.0</text><rect x="80" y="157" width="108" height="15" fill="#9fc3d1"/><text x="194" y="169">0.18</text>
+  <text x="70" y="190" text-anchor="end" font-family="DejaVu Sans Mono">4.5</text><rect x="80" y="179" width="48" height="15" fill="#9fc3d1"/><text x="134" y="191">0.08　→ 右端が9.95で余白が足りない</text>
+  <text x="70" y="212" text-anchor="end" font-family="DejaVu Sans Mono">その他</text><rect x="80" y="201" width="72" height="15" fill="#cfd6db"/><text x="158" y="213">0.12</text>
+ </g>
+</svg>
+<figcaption>「対称に並べる」「右余白も0.5」という文脈が、特定の数値の確率を押し上げる</figcaption>
+</figure>
+
+<h3>整合性は「文脈内の計算」で取れている</h3>
+<p>前回のスライドの値を足し算すると、配置の意図が読み取れます。</p>
+<div class="eq">0.5（左余白）+ 4.05（左カード）+ 0.9（矢印を含む間隔）+ 4.05（右カード）= 9.5　⇒　右余白 10 − 9.5 = 0.5</div>
+<p>左右の余白が等しく、カード幅も等しいので、人間の目には「バランスが取れている」と映ります。LLMはこのような関係を、<b>すでに書いた数値（文脈）を注意機構で参照し、内部で足し引きした結果</b>として次の数値に反映します。大規模モデルが数桁の加減算を内部で行えることは広く確認されており、レイアウトの座標計算はその応用です。</p>
+
+<div class="box"><b class="t">直感的なまとめ</b>
+「スライド幅10インチ」「余白0.5インチ」「左カードの幅4.05」という制約が文脈にそろうと、次の数値の分布は矛盾のない値の近くに鋭く集中します。LLMは画面を見て配置を決めているのではなく、<b>数値の制約を満たす続きを書いている</b>のです。</div>
+<div class="pn"><span>LLMはなぜ「見やすい資料」を作れるのか</span><span class="no"></span></div>
+</section>
+
+<!-- ===================== 5 ===================== -->
+<section class="page">
+<div class="kicker">2. 座標はどう決まるか</div>
+<h2>LLMの内部には「空間」が表現されている</h2>
+<p class="lead">言葉だけで学習したモデルの中に、空間の構造がほぼそのまま現れるという研究があります。</p>
+
+<p>Gurnee &amp; Tegmark（2024, ICLR）は、Llama-2（7B〜70B）に地名（「東京」「パリ」など）を入力し、各層の隠れ状態 <i>h</i> から実際の緯度・経度を当てられるかを調べました。使ったのは、最も単純な<b>線形の読み出し</b>（リッジ回帰）です。</p>
+<div class="eq">( 緯度, 経度 ) ≈ <i>W</i> <i>h</i> + <i>b</i></div>
+<p>結果、隠れ状態からかなりの精度で座標を読み出せました。この表現はモデルの前半の層で形成され、大きいモデルほど精度が高くなっています。さらに、非線形の読み出しを使っても精度はほとんど上がりませんでした。これは、<b>空間がベクトル空間の中のほぼ「平らな方向」として埋め込まれている</b>ことを意味します。</p>
+
+<figure>
+<svg viewBox="0 0 680 200">
+ <rect x="0" y="10" width="300" height="170" rx="8" fill="#f3f4f5"/>
+ <text x="150" y="32" text-anchor="middle" font-size="12" font-weight="700">隠れ状態（高次元ベクトル）</text>
+ <g fill="#1f6f8b">
+  <circle cx="60" cy="70" r="5"/><circle cx="110" cy="120" r="5"/><circle cx="200" cy="90" r="5"/><circle cx="250" cy="150" r="5"/><circle cx="160" cy="150" r="5"/>
+ </g>
+ <g font-size="10.5"><text x="68" y="66">札幌</text><text x="118" y="116">東京</text><text x="208" y="86">パリ</text><text x="258" y="146">ケープタウン</text><text x="168" y="146">シドニー</text></g>
+ <text x="150" y="172" text-anchor="middle" font-size="10" fill="#59636e">数千次元の空間（イメージ）</text>
+ <line x1="306" y1="95" x2="370" y2="95" stroke="#59636e" stroke-width="2" marker-end="url(#ar2)"/>
+ <defs><marker id="ar2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#59636e"/></marker></defs>
+ <text x="338" y="84" text-anchor="middle" font-size="11" font-family="Times New Roman" font-style="italic">Wh + b</text>
+ <rect x="376" y="10" width="304" height="170" rx="8" fill="#eaf2f5"/>
+ <text x="528" y="32" text-anchor="middle" font-size="12" font-weight="700">読み出した（経度, 緯度）</text>
+ <line x1="396" y1="100" x2="664" y2="100" stroke="#cfd6db"/><line x1="528" y1="42" x2="528" y2="170" stroke="#cfd6db"/>
+ <g fill="#b4461b"><circle cx="614" cy="62" r="5"/><circle cx="612" cy="76" r="5"/><circle cx="530" cy="66" r="5"/><circle cx="548" cy="140" r="5"/><circle cx="628" cy="138" r="5"/></g>
+ <g font-size="10.5"><text x="620" y="58">札幌</text><text x="620" y="86">東京</text><text x="536" y="62">パリ</text><text x="490" y="158">ケープタウン</text><text x="600" y="160">シドニー</text></g>
+</svg>
+<figcaption>線形写像だけで、隠れ状態から地図の配置が浮かび上がる（概念図）</figcaption>
+</figure>
+
+<h3>レイアウトとの関係（ここは類推です）</h3>
+<p>この研究が直接示しているのは地理と時間の表現であり、「スライドのレイアウト」を調べたものではありません。ただし、次の点は合理的な類推として言えます。</p>
+<ul>
+<li>テキストだけの学習でも、<b>「上・下・左・右・隣・内側」のような空間的な関係を、ベクトルの方向として持てる</b>。</li>
+<li>座標の数値トークンと「右側」「中央」「はみ出し」といった言葉が、同じ空間の近い方向に結びつく。だからこそ「右に寄せて」という指示を、xの値を増やす操作に翻訳できる。</li>
+</ul>
+
+<div class="box"><b class="t">ここまでの理解</b>
+LLMは「絵」を持っていません。代わりに<b>空間関係を表すベクトル</b>と、<b>数値で整合を取る能力</b>を持っています。この2つがあれば、見た目を記述するコードを矛盾なく書けます。</div>
+<div class="pn"><span>LLMはなぜ「見やすい資料」を作れるのか</span><span class="no"></span></div>
+</section>
+
+<!-- ===================== 6 ===================== -->
+<section class="page">
+<div class="kicker">3. 「見やすさ」の知識</div>
+<h2>「良いデザイン」の知識はどこから来るのか</h2>
+<p class="lead">配置を矛盾なく書けることと、人が見て分かりやすいことは別の能力です。</p>
+
+<p>ページ5の能力があれば、要素どうしが重ならず、余白もそろった配置は作れます。しかし「この内容なら左右の比較にする」「見出しは36pt以上にする」といった判断には、<b>人間の視覚と理解についての知識</b>が必要です。この知識は主に3つの経路から来ています。</p>
+
+<table>
+<tr><th style="width:22%">経路</th><th style="width:40%">何が入るか</th><th>例</th></tr>
+<tr><td><b>① 事前学習</b></td><td>デザインの教科書、UIガイドライン、プレゼン指南、良い例・悪い例の議論</td><td>「1スライド1メッセージ」「近接・整列・反復・対比」（デザインの4原則）</td></tr>
+<tr><td><b>② 事後学習</b></td><td>人間が「良い」と評価した出力に報酬を与える学習（RLHFなど）</td><td>読みやすく整った回答や成果物が選ばれやすくなる</td></tr>
+<tr><td><b>③ その場の指示</b></td><td>プロンプトやスキルに書かれた規則・例・禁止事項</td><td>「余白は0.5インチ以上」「タイトル下に線を引かない」</td></tr>
+</table>
+<div class="note"><b>注：RLHF（Reinforcement Learning from Human Feedback、人間のフィードバックによる強化学習）</b><br>
+①同じ依頼に対するモデルの出力を複数並べ、人間がより良いほうを選ぶ。②その選択の記録から、出力の良さを点数にする「報酬モデル」を学習する。③LLMを、報酬モデルの点数が高くなる方向へ調整する。Anthropicは人間の評価に加えて、明文化した原則に沿ってAIが評価する手法（Constitutional AI）も使っています。なお、この評価で描画したスライドの見た目まで採点しているかどうかは公開されていません。</div>
+
+<h3>① だけでは「平均的なスライド」になりやすい</h3>
+<p>事前学習で得た分布は、世の中のスライドやWebページの<b>平均的な姿</b>を反映しています。そのため、何も指示しないと、よく見かける無難な構成（白地に箇条書き、青系の配色、タイトル下の飾り線など）が高い確率で出てきます。いわゆる「AIっぽいスライド」の多くは、この平均への引き寄せで説明できます。</p>
+
+<figure>
+<svg viewBox="0 0 680 182">
+ <line x1="30" y1="140" x2="660" y2="140" stroke="#59636e"/>
+ <text x="345" y="178" text-anchor="middle" font-size="11" fill="#59636e">出力されうるスライドの空間（概念図）</text>
+ <path d="M40,140 C150,140 200,40 330,40 C460,40 510,140 640,140" fill="#cfd6db" opacity=".7"/>
+ <text x="330" y="32" text-anchor="middle" font-size="11.5">指示なし：平均的で無難な構成に集中</text>
+ <path d="M380,140 C430,140 450,60 480,60 C510,60 530,140 580,140" fill="#1f6f8b" opacity=".85"/>
+ <text x="560" y="74" font-size="11.5" fill="#1f6f8b" font-weight="700">スキルで条件付け</text>
+ <text x="560" y="90" font-size="11" fill="#1f6f8b">見やすい領域へ鋭く寄る</text>
+ <g font-size="10.5" fill="#59636e" text-anchor="middle"><text x="110" y="157">崩れた配置</text><text x="330" y="157">平均的・無難</text><text x="480" y="157" fill="#1f6f8b" font-weight="700">意図のある配置</text></g>
+</svg>
+<figcaption>スキルは確率分布の「山」を、人間にとって見やすい方向へ移動させて尖らせる</figcaption>
+</figure>
+
+<div class="box"><b class="t">ポイント</b>
+「見やすさ」は、LLMが自分の目で確かめて身につけたものではありません。<b>人間が言葉で書き残したデザインの知見</b>を、確率分布として取り込んだものです。そのため、知見を言葉で明示的に与える（スキル）と、出力の質は大きく変わります。</div>
+<div class="pn"><span>LLMはなぜ「見やすい資料」を作れるのか</span><span class="no"></span></div>
+</section>
+
+<!-- ===================== 7 ===================== -->
+<section class="page">
+<div class="kicker">3. 「見やすさ」の知識</div>
+<h2>スキルは何をしているのか</h2>
+<p class="lead">スキルは「デザインの経験知」と「確かめるための道具」をLLMの文脈に差し込みます。</p>
+
+<p>確率の言葉で書くと、スキルの効果は条件付けです。スキル本文 <i>S</i> が文脈に入ることで、同じ依頼 <i>q</i> でも出力 <i>y</i> の分布が変わります。</p>
+<div class="eq"><i>P</i>( <i>y</i> | <i>q</i> )　→　<i>P</i>( <i>y</i> | <i>q</i>, <i>S</i> )</div>
+<p>今回使ったpptxスキル（Anthropic公式）の <code>SKILL.md</code> には、たとえば次のような内容が書かれています（要約・抜粋）。</p>
+
+<div class="cols">
+<div>
+<h3>① 数値で書かれたデザイン規則</h3>
+<ul>
+<li>余白は最低0.5インチ、要素間は0.3〜0.5インチ</li>
+<li>タイトル36〜44pt、本文14〜16pt</li>
+<li>1色を主役（6〜7割）に、補助1〜2色＋差し色1色</li>
+<li>どのスライドにも視覚要素（図・アイコン・図形）を入れる</li>
+</ul>
+<h3>② 失敗例（禁止事項）</h3>
+<ul>
+<li>タイトル下の飾り線、端の色帯を使わない</li>
+<li>本文を中央揃えにしない</li>
+<li>同じレイアウトを繰り返さない</li>
+</ul>
+</div>
+<div>
+<h3>③ 道具の落とし穴</h3>
+<ul>
+<li>キャンバスは幅10インチ×高さ5.625インチ</li>
+<li>色の指定に「#」を付けるとファイルが壊れる</li>
+<li>テキストボックスには内側の余白がある</li>
+</ul>
+<h3>④ 検証の手順とスクリプト</h3>
+<ul>
+<li>PDFに変換し画像にして、1枚ずつ目視確認する</li>
+<li>確認項目：はみ出し、重なり、余白不足、低コントラスト</li>
+<li><code>validate.py</code>：ファイル構造の検査</li>
+</ul>
+</div>
+</div>
+
+<p>①はページ7の「平均への引き寄せ」を打ち消す働きをします。数値で規則が書かれていると、ページ5で説明した「文脈内の数値を参照して整合を取る」能力がそのまま効きます。②は、事前学習の分布が特に起こしやすい失敗を名指しで潰しています。</p>
+
+<div class="box gray"><b class="t">なぜ「毎回プロンプトに書く」のでなくスキルなのか</b>
+スキルは、普段は名前と説明（description）だけが文脈に置かれ、関係する依頼が来たときに本文が読み込まれます（段階的な読み込み）。そのため、こうした細かい経験知を大量に用意しておいても、文脈を圧迫しません。仕組みとしてはRAGに近いですが、検索するのはモデル自身であり、手順と道具（スクリプト）をひとまとめにして渡せる点が違います。</div>
+
+<div class="box"><b class="t">ここまでの理解</b>
+「配置を整合させる力」（ページ5〜6）に、「人が見やすい配置の規則」（スキル①②）が加わると、多くの場合は整った資料になります。ただし、まだ<b>実際の見た目を確かめていません</b>。それを担うのが次の「目」です。</div>
+<div class="pn"><span>LLMはなぜ「見やすい資料」を作れるのか</span><span class="no"></span></div>
+</section>
+
+<!-- ===================== 8 ===================== -->
+<section class="page">
+<div class="kicker">4. LLMの「目」</div>
+<h2>画像もトークン列にすれば、Transformerで読める</h2>
+<p class="lead">マルチモーダルなLLMは、画像を「単語のような断片」に切り分けて入力しています。</p>
+
+<p>テキストは単語（トークン）に分けてベクトルにします。ViT（Vision Transformer, 2020）は、画像についても同じことをしました。画像を <i>P</i>×<i>P</i> ピクセルの小さな正方形（パッチ）に切り、各パッチを1つのトークンとして扱います。</p>
+<div class="eq">パッチ数　<i>N</i> = ( <i>H</i> / <i>P</i> ) × ( <i>W</i> / <i>P</i> )　　例：336×336画像、<i>P</i> = 14 → 24 × 24 = <b>576トークン</b></div>
+<p>各パッチ（14×14×RGB = 588個の数値）を線形変換でベクトルにし、位置埋め込みを足してTransformerに入れます。GPT-2の「トークン埋め込み＋位置埋め込み」と同じ構造です。</p>
+
+<figure>
+<svg viewBox="0 0 680 220">
+ <defs><marker id="ar3" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#59636e"/></marker></defs>
+ <!-- slide image -->
+ <rect x="0" y="30" width="150" height="100" fill="#fff" stroke="#cfd6db"/>
+ <rect x="12" y="44" width="80" height="10" fill="#1f2328"/>
+ <rect x="12" y="72" width="58" height="44" fill="#f3f4f5"/><rect x="80" y="72" width="58" height="44" fill="#eaf2f5" stroke="#1f6f8b"/>
+ <g stroke="#b4461b" stroke-width=".8" opacity=".7">
+  <line x1="37.5" y1="30" x2="37.5" y2="130"/><line x1="75" y1="30" x2="75" y2="130"/><line x1="112.5" y1="30" x2="112.5" y2="130"/>
+  <line x1="0" y1="55" x2="150" y2="55"/><line x1="0" y1="80" x2="150" y2="80"/><line x1="0" y1="105" x2="150" y2="105"/>
+ </g>
+ <text x="0" y="20" font-size="11" font-weight="700">① 画像をパッチに分割</text>
+ <line x1="156" y1="80" x2="196" y2="80" stroke="#59636e" stroke-width="2" marker-end="url(#ar3)"/>
+ <!-- encoder -->
+ <rect x="200" y="40" width="120" height="80" rx="8" fill="#f3f4f5"/>
+ <text x="260" y="72" text-anchor="middle" font-size="12" font-weight="700">画像エンコーダ</text>
+ <text x="260" y="92" text-anchor="middle" font-size="10.5" fill="#59636e">（ViT など）</text>
+ <text x="260" y="20" text-anchor="middle" font-size="11" font-weight="700">② 特徴ベクトル Z</text>
+ <line x1="324" y1="80" x2="364" y2="80" stroke="#59636e" stroke-width="2" marker-end="url(#ar3)"/>
+ <rect x="368" y="50" width="70" height="60" rx="8" fill="#eaf2f5" stroke="#1f6f8b"/>
+ <text x="403" y="78" text-anchor="middle" font-size="12" font-family="Times New Roman" font-style="italic">H = WZ</text>
+ <text x="403" y="96" text-anchor="middle" font-size="9.5">射影</text>
+ <text x="403" y="20" text-anchor="middle" font-size="11" font-weight="700">③ 単語と同じ次元へ</text>
+ <line x1="442" y1="80" x2="482" y2="80" stroke="#59636e" stroke-width="2" marker-end="url(#ar3)"/>
+ <!-- token sequence -->
+ <text x="580" y="20" text-anchor="middle" font-size="11" font-weight="700">④ テキストと並べてLLMへ</text>
+ <g>
+  <rect x="486" y="56" width="22" height="22" fill="#b4461b"/><rect x="510" y="56" width="22" height="22" fill="#b4461b"/><rect x="534" y="56" width="22" height="22" fill="#b4461b"/><text x="566" y="72" font-size="11">…</text>
+  <rect x="582" y="56" width="22" height="22" fill="#1f6f8b"/><rect x="606" y="56" width="22" height="22" fill="#1f6f8b"/><rect x="630" y="56" width="22" height="22" fill="#1f6f8b"/><rect x="654" y="56" width="22" height="22" fill="#1f6f8b"/>
+ </g>
+ <text x="530" y="98" text-anchor="middle" font-size="10" fill="#b4461b">画像トークン</text>
+ <text x="630" y="98" text-anchor="middle" font-size="10" fill="#1f6f8b">「はみ出しは？」</text>
+ <rect x="486" y="112" width="190" height="34" rx="6" fill="#1f2328"/>
+ <text x="581" y="134" text-anchor="middle" font-size="11.5" fill="#fff">Transformer（LLM本体）</text>
+ <text x="340" y="190" text-anchor="middle" font-size="11" fill="#59636e">画像トークンとテキストトークンは同じ注意機構で混ざり合い、「右のカードの文字が枠からはみ出している」といった文章を生成できる</text>
+</svg>
+<figcaption>マルチモーダルLLMの入力の流れ（公開研究LLaVAの構成を例にした概念図）</figcaption>
+</figure>
+
+<h3>画像と言葉を同じ空間にそろえる：CLIP</h3>
+<p>画像のベクトルが言葉と「話が通じる」ためには、両者を同じ意味空間にそろえる必要があります。CLIP（2021）は、約4億組の画像と説明文を使い、対応する組の類似度を高め、対応しない組の類似度を下げる学習（対照学習）を行いました。</p>
+<div class="eq">類似度 = cos( <i>f</i><sub>画像</sub>(画像), <i>g</i><sub>文</sub>(説明文) )　→　正しい組で最大化、誤った組で最小化</div>
+<p>LLaVA（2023）は、CLIPの画像エンコーダの出力 <i>Z</i> を学習可能な行列 <i>W</i> で単語埋め込みの次元に写し（<i>H</i> = <i>WZ</i>）、テキストと並べてLLMに入力しました。こうしてLLMは画像について質問に答えられるようになります。</p>
+<p class="small">※ Claudeの画像処理の内部構成は公開されていません。ここで示したのは、公開研究で確立されている代表的な方式です。</p>
+<div class="pn"><span>LLMはなぜ「見やすい資料」を作れるのか</span><span class="no"></span></div>
+</section>
+
+<!-- ===================== 9 ===================== -->
+<section class="page">
+<div class="kicker">4. LLMの「目」</div>
+<h2>作る → 描く → 見る → 直す、の検証ループ</h2>
+<p class="lead">ご存じのエージェントの原理（推論はLLM、道具はTool）が、そのまま資料作成にも当てはまります。</p>
+
+<figure>
+<svg viewBox="0 0 680 270">
+ <defs><marker id="ar4" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#1f6f8b"/></marker></defs>
+ <g font-size="12.5">
+  <rect x="250" y="10" width="180" height="60" rx="10" fill="#eaf2f5" stroke="#1f6f8b" stroke-width="2"/>
+  <text x="340" y="36" text-anchor="middle" font-weight="700">① 設計図を書く</text>
+  <text x="340" y="56" text-anchor="middle" font-size="10.5">LLM：コード生成</text>
+  <rect x="490" y="105" width="180" height="60" rx="10" fill="#f3f4f5"/>
+  <text x="580" y="131" text-anchor="middle" font-weight="700">② 描画する</text>
+  <text x="580" y="151" text-anchor="middle" font-size="10.5">Tool：PowerPoint→PDF→画像</text>
+  <rect x="250" y="200" width="180" height="60" rx="10" fill="#eaf2f5" stroke="#1f6f8b" stroke-width="2"/>
+  <text x="340" y="226" text-anchor="middle" font-weight="700">③ 画像を見る</text>
+  <text x="340" y="246" text-anchor="middle" font-size="10.5">LLM：画像トークンを読む</text>
+  <rect x="10" y="105" width="180" height="60" rx="10" fill="#eaf2f5" stroke="#1f6f8b" stroke-width="2"/>
+  <text x="100" y="131" text-anchor="middle" font-weight="700">④ 問題を見つけて直す</text>
+  <text x="100" y="151" text-anchor="middle" font-size="10.5">LLM：原因の推定と修正</text>
+ </g>
+ <path d="M432,45 Q560,45 575,100" fill="none" stroke="#1f6f8b" stroke-width="2" marker-end="url(#ar4)"/>
+ <path d="M575,168 Q560,230 435,230" fill="none" stroke="#1f6f8b" stroke-width="2" marker-end="url(#ar4)"/>
+ <path d="M248,230 Q120,230 105,170" fill="none" stroke="#1f6f8b" stroke-width="2" marker-end="url(#ar4)"/>
+ <path d="M105,102 Q120,45 245,45" fill="none" stroke="#1f6f8b" stroke-width="2" marker-end="url(#ar4)"/>
+ <text x="340" y="128" text-anchor="middle" font-size="11" fill="#59636e">問題がなくなるまで</text>
+ <text x="340" y="146" text-anchor="middle" font-size="11" fill="#59636e">繰り返す</text>
+</svg>
+<figcaption>スキルに書かれた手順どおりにLLMが回す検証ループ。②はLLMにはできない処理なのでToolに任せる</figcaption>
+</figure>
+
+<h3>なぜループが必要か：コードからは見えない問題がある</h3>
+<p>ページ5の数値計算で分かるのは、<b>図形の位置関係</b>までです。次のような問題は、実際に描画しないと分かりません。</p>
+<ul>
+<li><b>文字の実際の幅</b>：同じ14ptでも、フォントや文字の種類（全角・半角）によって幅が違い、折り返しの位置が変わる</li>
+<li><b>フォントの置き換え</b>：指定したフォントが環境にないと別のフォントで表示され、幅が変わる</li>
+<li><b>全体の印象</b>：余白の偏り、窮屈さ、色のコントラスト不足など、数値の上では正しくても見ると不自然な点（どう判定するかは次ページ）</li>
+</ul>
+<p>pptxスキルが「描画した画像を、先入観なしに見る（できれば別のエージェントで）」と指示しているのはこのためです。コードを書いた本人は「意図した通りになっているはず」と読んでしまうので、画像という<b>別の入力経路</b>で確かめさせています。</p>
+
+<div class="box"><b class="t">エージェントの原理との対応</b>
+<table style="margin:1mm 0 0">
+<tr><th style="width:30%">エージェントの要素</th><th>資料作成での中身</th></tr>
+<tr><td>推論・戦略（LLM）</td><td>構成を考える、座標を決める、画像を見て原因を推定する</td></tr>
+<tr><td>Tool</td><td>スライド生成ライブラリ、PDF変換、画像化、検証スクリプト</td></tr>
+<tr><td>手順書（スキル）</td><td>規則・禁止事項・確認項目・ループの回し方</td></tr>
+</table></div>
+<div class="pn"><span>LLMはなぜ「見やすい資料」を作れるのか</span><span class="no"></span></div>
+</section>
+
+<!-- ===================== NEW 11 ===================== -->
+<section class="page">
+<div class="kicker">4. LLMの「目」</div>
+<h2>AIの目は「不自然さ」をどう判定しているのか</h2>
+<p class="lead">ここでいう「目」はAI（マルチモーダルLLM）自身の目です。人間の目は最後の確認役です。</p>
+
+<p><b>この資料での実例：</b>私はChromiumで各ページを画像にして読み込み（p.9の仕組みで画像トークンになります）、図5のラベルの不具合に気づきました。根拠は3つです。①<b>コードとの照合</b>：「意図のある」という灰色の文字を置いたはずの位置に、画像では濃い青しか見えなかった。②<b>画像からの印象</b>：背景とほぼ同じ明るさの細い文字は、縮小とパッチ化で特徴が弱くなる。③<b>典型例の知識</b>：「濃い色の上に灰色の文字」は低コントラストの定番の失敗。つまり、<b>画像だけで判定したわけではありません</b>。</p>
+<figure>
+<svg viewBox="0 0 680 142">
+ <text x="0" y="14" font-size="12" font-weight="700" fill="#b4461b">修正前</text>
+ <line x1="0" y1="110" x2="310" y2="110" stroke="#59636e"/>
+ <path d="M0,110 C80,110 110,40 170,40 C230,40 260,110 310,110" fill="#cfd6db" opacity=".7"/>
+ <path d="M160,110 C195,110 205,45 232,45 C259,45 269,110 304,110" fill="#1f6f8b"/>
+ <text x="202" y="102" font-size="10.5" fill="#59636e">意図のある</text>
+ <ellipse cx="228" cy="98" rx="40" ry="13" fill="none" stroke="#b4461b" stroke-width="2" stroke-dasharray="4 3"/>
+ <text x="0" y="136" font-size="10.5" fill="#b4461b">灰色の文字が濃い青に埋もれる（コントラスト比 1.08 : 1）</text>
+ <text x="370" y="14" font-size="12" font-weight="700" fill="#1f6f8b">修正後</text>
+ <line x1="370" y1="110" x2="680" y2="110" stroke="#59636e"/>
+ <path d="M370,110 C450,110 480,40 540,40 C600,40 630,110 680,110" fill="#cfd6db" opacity=".7"/>
+ <path d="M530,110 C565,110 575,45 602,45 C629,45 639,110 674,110" fill="#1f6f8b"/>
+ <text x="602" y="123" text-anchor="middle" font-size="10.5" font-weight="700" fill="#1f6f8b">意図のある配置</text>
+ <text x="680" y="140" text-anchor="end" font-size="10.5" fill="#1f6f8b">軸の下の白地へ移動（コントラスト比 5.67 : 1）</text>
+</svg>
+<figcaption>この資料の図5で実際に見つけて直した問題（再現図）</figcaption>
+</figure>
+<div class="box"><b class="t">注意：「AIが読める」≠「人が読みやすい」</b>
+ピクセル値は正確なので、人には埋もれて見える文字をAIが読めてしまうことがあります（逆もあります）。そのため、問うべきは「自分が読めるか」ではなく「人が見たら読みにくいと言うか」です。さらに確実なのは数値で測ることです。Webアクセシビリティの基準（WCAG）では、文字と背景の明るさの比（コントラスト比）が本文で4.5 : 1以上と定められています。計算すると、修正前は<b>1.08 : 1</b>（明るさがほぼ同じ）、修正後は<b>5.67 : 1</b>でした。この基準は人間の視覚の研究に基づくため、AIが読めるかどうかに左右されません。</div>
+
+<h3>判定を支える3つの仕組み</h3>
+<table>
+<tr><th style="width:27%">仕組み</th><th>中身</th></tr>
+<tr><td><b>① 探す項目を言葉でもらう</b></td><td>スキルの確認項目（はみ出し・重なり・余白不足・低コントラスト）が「どこを見るか」を決める。画像と説明文の組から学んだ「見た目」と「言葉」の対応で、該当箇所を探す。</td></tr>
+<tr><td><b>② 「よくある姿」からのずれを感じ取る</b></td><td>不自然な文を「確率の低い文」と感じ取るのと同じ理屈。学習した「整ったページの典型」からのずれに、「窮屈」「読みにくい」といった言葉を当てはめる。</td></tr>
+<tr><td><b>③ 「人間ならどう評するか」を予測する</b></td><td>人間の知覚を測るのではなく、人間の批評や選好の学習（p.7）をもとに<b>人が何と言うか</b>を予測する。基準そのものは人間から借りている。</td></tr>
+</table>
+
+<div class="box warm"><b class="t">限界と、その補い方</b>
+<ul style="margin:0">
+<li>細かな寸法や色の差は見誤りうる → <b>測れるものは機械で測る</b>（コントラスト比など）。</li>
+<li>見た目の好みには個人差がある → <b>最終判断は人間の目</b>で行う。</li>
+</ul></div>
+<div class="pn"><span>LLMはなぜ「見やすい資料」を作れるのか</span><span class="no"></span></div>
+</section>
+
+<!-- ===================== 10 ===================== -->
+<section class="page">
+<div class="kicker">5. 実例</div>
+<h2>前回のスライド作成で、実際に起きたこと</h2>
+<p class="lead">勉強会スライドの作成では、図7のループの②③（描画してAIの目で見る）が欠けていました。</p>
+
+<h3>状況</h3>
+<p>pptxスキルは、PDF変換（LibreOffice）と画像化（pdftoppm）でスライドを目視確認するよう指示しています。しかし、このDev Containersにはどちらも入っておらず、外部からのインストールも当時の規則（CLAUDE.md）で禁止されていました。そこで私は、<b>目を使わずに</b>次の代わりの方法で品質を担保しようとしました。</p>
+
+<table>
+<tr><th style="width:30%">本来の手順</th><th style="width:35%">実際に行ったこと</th><th>確かめられなかったこと</th></tr>
+<tr><td>描画した画像で、はみ出しを確認</td><td>文字幅を計算で見積もる（14ptの全角1文字 ≈ 0.19インチ → 幅4インチに約20文字）</td><td>Meiryo UIでの実際の幅、折り返しの位置</td></tr>
+<tr><td>画像で全体のバランスを見る</td><td>座標の足し算で、余白と対称性を確認</td><td>見たときの窮屈さ、余白の偏り</td></tr>
+<tr><td>validate.pyでの構造検査</td><td>標準ライブラリでXMLの整合性を確認</td><td>PowerPoint固有の制約</td></tr>
+<tr><td>別のエージェントによる目視確認</td><td>別のエージェントに<b>文字だけ</b>を読ませて内容を確認</td><td>視覚面の問題全般</td></tr>
+</table>
+
+<h3>見積もりの式</h3>
+<p>全角文字の幅はおおむね文字サイズと同じなので、次のように見積もれます（1pt = 1/72インチ）。</p>
+<div class="eq">文字数 ≈ 幅[インチ] ÷ ( サイズ[pt] ÷ 72 )　　例：4.0 ÷ (14 ÷ 72) ≈ 20.6</div>
+<p>この見積もりで「21文字の箇条書きは2行に折り返す。3項目で約5行になるので、高さ1.65インチにぎりぎり収まる」と判断し、本文を13ptに下げました。数値の推論としては筋が通っていますが、<b>実際に収まったかどうかは、PowerPointで開いた人間が見るまで分かりません</b>。そのため、納品時に「見た目の確認はできていない」とお伝えしました。</p>
+
+<div class="box warm"><b class="t">この実例から分かること</b>
+<ul style="margin:0">
+<li>ページ5〜8の能力（座標の整合、デザイン規則）だけでも、<b>ほぼ整った</b>資料は作れる。</li>
+<li>しかし最後の品質（文字の収まり、見た目の印象）は、<b>描画して見る</b>ことでしか保証できない。</li>
+<li>LLMが「見やすい資料を作れる」のは、LLM単体の力というより、<b>LLM＋スキル＋レンダラ＋AIの目</b>（最後に人の目）という仕組み全体の力である。</li>
+</ul></div>
+<p class="small">※ その後CLAUDE.mdが更新され、許可を得れば必要なライブラリを入れられるようになりました。この資料自体は、環境にあったChromiumで描画し、画像で確認しながら作っています。</p>
+<div class="pn"><span>LLMはなぜ「見やすい資料」を作れるのか</span><span class="no"></span></div>
+</section>
+
+<!-- ===================== 11 ===================== -->
+<section class="page">
+<div class="kicker">6. 対比</div>
+<h2>画像生成AI（拡散モデル）は本当に「描いている」</h2>
+<p class="lead">「文章をイメージに変換する」と聞いて思い浮かぶもう一つの技術は、仕組みがまったく違います。</p>
+
+<p>Stable Diffusionなどの画像生成AIは、コードではなく<b>ピクセルを直接</b>作ります。考え方の基本は「ノイズを少しずつ取り除く」です。</p>
+
+<figure>
+<svg viewBox="0 0 680 150">
+ <defs><pattern id="nz" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#cfd6db"/><rect width="3" height="3" fill="#59636e"/><rect x="3" y="3" width="3" height="3" fill="#9aa4ad"/></pattern>
+ <marker id="ar5" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#59636e"/></marker></defs>
+ <rect x="10" y="20" width="90" height="90" fill="url(#nz)"/>
+ <rect x="150" y="20" width="90" height="90" fill="url(#nz)" opacity=".75"/><circle cx="195" cy="65" r="26" fill="#1f6f8b" opacity=".35"/>
+ <rect x="290" y="20" width="90" height="90" fill="url(#nz)" opacity=".4"/><circle cx="335" cy="65" r="28" fill="#1f6f8b" opacity=".7"/>
+ <rect x="430" y="20" width="90" height="90" fill="#eaf2f5"/><circle cx="475" cy="65" r="30" fill="#1f6f8b"/><rect x="455" y="94" width="40" height="8" fill="#b4461b"/>
+ <g stroke="#59636e" stroke-width="2"><line x1="104" y1="65" x2="144" y2="65" marker-end="url(#ar5)"/><line x1="244" y1="65" x2="284" y2="65" marker-end="url(#ar5)"/><line x1="384" y1="65" x2="424" y2="65" marker-end="url(#ar5)"/></g>
+ <g font-size="11" text-anchor="middle"><text x="55" y="128">純粋なノイズ</text><text x="195" y="128">少し除去</text><text x="335" y="128">さらに除去</text><text x="475" y="128">画像</text></g>
+ <rect x="545" y="35" width="130" height="60" rx="8" fill="#f3f4f5"/>
+ <text x="610" y="58" text-anchor="middle" font-size="11" font-weight="700">手がかり（言葉）</text>
+ <text x="610" y="76" text-anchor="middle" font-size="10">「青い丸の絵」の</text>
+ <text x="610" y="90" text-anchor="middle" font-size="10">テキスト埋め込み</text>
+</svg>
+<figcaption>拡散モデルはノイズから出発し、テキストを手がかりに少しずつノイズを取り除いて画像を作る</figcaption>
+</figure>
+
+<h3>どうやって学び、どうやって描くのか（概念）</h3>
+<ol>
+<li><b>壊す練習</b>：大量の写真に、わざと砂嵐（ノイズ）を少しずつ混ぜていきます。写真には「青い丸」のような説明文が添えられています。</li>
+<li><b>直す練習</b>：砂嵐の混ざった写真を見て「どんな砂嵐が混ざったか」を当て、取り除く練習を、説明文を手がかりにしながら何億回も繰り返します。</li>
+<li><b>描く</b>：完全な砂嵐から出発し、「青い丸」という言葉を手がかりに少しずつ砂嵐を取り除きます。最後に、元はどこにもなかった「青い丸の絵」が現れます。</li>
+</ol>
+<div class="box gray"><b class="t">たとえ</b>
+彫刻家が石の塊から余分な部分を削って像を彫り出すように、砂嵐から「余分なもの」を少しずつ削って絵を浮かび上がらせます。どこを削るかの判断に、言葉（説明文）を使います。言葉と絵をつなぐ役は、p.9で紹介したCLIPのような仕組みが担っています。</div>
+<table>
+<tr><th style="width:22%"></th><th style="width:39%">LLM＋コード（スライド作成）</th><th>拡散モデル（画像生成）</th></tr>
+<tr><td>出力</td><td>設計図のテキスト（座標・文字列）</td><td>ピクセル</td></tr>
+<tr><td>文字の正確さ</td><td>正確（文字列をそのまま指定）</td><td>崩れやすい（形として描くため）</td></tr>
+<tr><td>後からの修正</td><td>数値を1つ変えれば済む</td><td>作り直しになりやすい</td></tr>
+<tr><td>得意なこと</td><td>図表、整列、構造のある資料</td><td>写真風・イラスト・質感</td></tr>
+</table>
+<div class="box"><b class="t">使い分けの理由</b>
+スライドのような資料では「文字が正確」「後から直せる」「整列している」ことが最も大事です。そのため、Agent Skillsでは拡散モデルではなく<b>LLMがコードを書く方式</b>が使われています。写真やイラストが必要なら、画像生成を「Tool」として呼び出し、その結果をスライドに配置する、という組み合わせが自然です。</div>
+<div class="pn"><span>LLMはなぜ「見やすい資料」を作れるのか</span><span class="no"></span></div>
+</section>
+
+<!-- ===================== 12 ===================== -->
+<section class="page">
+<div class="kicker">まとめ</div>
+<h2>全体像：「見やすい資料」は仕組み全体で作られる</h2>
+
+<figure>
+<svg viewBox="0 0 680 300">
+ <defs><marker id="ar6" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#59636e"/></marker></defs>
+ <rect x="0" y="0" width="680" height="300" rx="10" fill="#f3f4f5"/>
+ <!-- LLM core -->
+ <rect x="230" y="90" width="220" height="120" rx="10" fill="#fff" stroke="#1f6f8b" stroke-width="2"/>
+ <text x="340" y="114" text-anchor="middle" font-size="13" font-weight="700" fill="#1f6f8b">LLM</text>
+ <g font-size="10.5"><text x="248" y="138">・レイアウト言語の知識（p.3–4）</text><text x="248" y="156">・数値の整合と空間表現（p.5–6）</text><text x="248" y="174">・デザイン知識の分布（p.7）</text><text x="248" y="192">・画像を読むAIの目（p.9, 11）</text></g>
+ <!-- skill -->
+ <rect x="20" y="20" width="180" height="80" rx="10" fill="#eaf2f5"/>
+ <text x="110" y="46" text-anchor="middle" font-size="12" font-weight="700">スキル（p.8）</text>
+ <text x="110" y="66" text-anchor="middle" font-size="10.5">規則・禁止事項・手順</text>
+ <text x="110" y="82" text-anchor="middle" font-size="10.5">→ 分布を見やすい側へ</text>
+ <line x1="200" y1="70" x2="228" y2="110" stroke="#59636e" stroke-width="2" marker-end="url(#ar6)"/>
+ <!-- request -->
+ <rect x="20" y="200" width="180" height="80" rx="10" fill="#fff" stroke="#cfd6db"/>
+ <text x="110" y="228" text-anchor="middle" font-size="12" font-weight="700">依頼（文章）</text>
+ <text x="110" y="248" text-anchor="middle" font-size="10.5">伝えたい内容・読み手</text>
+ <line x1="200" y1="230" x2="228" y2="190" stroke="#59636e" stroke-width="2" marker-end="url(#ar6)"/>
+ <!-- code -->
+ <rect x="480" y="20" width="180" height="80" rx="10" fill="#fff" stroke="#cfd6db"/>
+ <text x="570" y="46" text-anchor="middle" font-size="12" font-weight="700">設計図（コード）</text>
+ <text x="570" y="66" text-anchor="middle" font-size="10.5">座標・大きさ・文字列</text>
+ <text x="570" y="82" text-anchor="middle" font-size="10.5">（p.2）</text>
+ <line x1="452" y1="110" x2="478" y2="72" stroke="#59636e" stroke-width="2" marker-end="url(#ar6)"/>
+ <!-- renderer -->
+ <rect x="480" y="200" width="180" height="80" rx="10" fill="#fff" stroke="#cfd6db"/>
+ <text x="570" y="228" text-anchor="middle" font-size="12" font-weight="700">レンダラ（Tool）</text>
+ <text x="570" y="248" text-anchor="middle" font-size="10.5">設計図 → 画像</text>
+ <text x="570" y="264" text-anchor="middle" font-size="10.5">（p.10）</text>
+ <line x1="570" y1="102" x2="570" y2="196" stroke="#59636e" stroke-width="2" marker-end="url(#ar6)"/>
+ <line x1="478" y1="235" x2="452" y2="195" stroke="#b4461b" stroke-width="2.5" marker-end="url(#ar6)"/>
+ <text x="470" y="262" font-size="10.5" fill="#b4461b" font-weight="700" text-anchor="end">画像を見て直す</text>
+</svg>
+<figcaption>LLM単体ではなく、スキル・Tool・AIの目による検証（最後に人の目）が組み合わさって「見やすい資料」になる</figcaption>
+</figure>
+
+<div class="ans"><b>最初の問いへの答え</b>
+<p style="margin:1.5mm 0 0">LLMは文章をイメージに直接変換していません。<b>見た目を記述するテキスト（座標・大きさ・文字列）を、次トークン予測で書いています。</b>それが整って見えるのは、①レイアウト言語と空間関係を学習で獲得し、②文脈内の数値を参照して整合を取り、③スキルが人間のデザイン知見で分布を絞り、④描画した結果を画像トークンとして読んで直すからです。</p></div>
+
+<h3>参考文献</h3>
+<ol class="ref">
+<li>Dosovitskiy, A. et al. (2021). <i>An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale.</i> ICLR. （ViT）</li>
+<li>Radford, A. et al. (2021). <i>Learning Transferable Visual Models From Natural Language Supervision.</i> ICML. （CLIP）</li>
+<li>Liu, H. et al. (2023). <i>Visual Instruction Tuning.</i> NeurIPS. arXiv:2304.08485 （LLaVA）</li>
+<li>Gurnee, W. &amp; Tegmark, M. (2024). <i>Language Models Represent Space and Time.</i> ICLR. arXiv:2310.02207</li>
+<li>Bubeck, S. et al. (2023). <i>Sparks of Artificial General Intelligence: Early experiments with GPT-4.</i> arXiv:2303.12712</li>
+<li>Ho, J. et al. (2020). <i>Denoising Diffusion Probabilistic Models.</i> NeurIPS. （拡散モデル）</li>
+<li>Rombach, R. et al. (2022). <i>High-Resolution Image Synthesis with Latent Diffusion Models.</i> CVPR. （Stable Diffusionの基礎）</li>
+<li>W3C (2023). <i>Web Content Accessibility Guidelines (WCAG) 2.2</i>, 1.4.3 Contrast (Minimum).</li>
+<li>Anthropic. pptxスキル（<code>document-skills:pptx</code> の SKILL.md）、anthropics/skills リポジトリ</li>
+</ol>
+<div class="pn"><span>LLMはなぜ「見やすい資料」を作れるのか</span><span class="no"></span></div>
+</section>
+
+<script>
+// QA: mark pages whose content overflows
+document.querySelectorAll('.page').forEach((p,i)=>{
+  const pn=p.querySelector('.pn'); let maxBottom=0;
+  [...p.children].forEach(c=>{ if(c!==pn){ const b=c.offsetTop+c.offsetHeight; if(b>maxBottom)maxBottom=b; }});
+  p.dataset.used=Math.round(maxBottom/p.clientHeight*100);
+});
+const h=location.hash.match(/p(\d+)/); if(h){document.querySelectorAll('.page').forEach((p,i)=>{if(i+1!=+h[1])p.style.display='none'});}
+document.body.dataset.qa=[...document.querySelectorAll('.page')].map((p,i)=>`p${i+1}:${p.dataset.used}%`).join(' ');
+</script>
+</body></html>

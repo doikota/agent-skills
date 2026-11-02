@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "open-meteo": {
+      "type": "stdio",
+      "command": "/workspaces/agent-skills/.venv/bin/python",
+      "args": [
+        "/workspaces/agent-skills/mcp/open-meteo-weather/open_meteo_mcp.py"
+      ],
+      "env": {}
+    }
+  }
+}
