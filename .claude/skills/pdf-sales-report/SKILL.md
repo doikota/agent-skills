@@ -1,11 +1,11 @@
 ---
 name: pdf-sales-report
-description: Generate a Japanese monthly sales report PDF (概要/部門別売上/商品別ランキング sections) from a sales CSV file, using the embedded Meiryo UI font. Use when the user asks to create a monthly sales report PDF from CSV sales data with Japanese fonts.
+description: Generate a Japanese monthly sales report PDF (概要/部門別売上/商品別ランキング sections) from a sales CSV file, using the embedded Noto Sans JP font. Use when the user asks to create a monthly sales report PDF from CSV sales data with Japanese fonts.
 ---
 
 # PDF 月次売上レポート作成スキル
 
-CSV形式の売上データから、日本語(Meiryo UI)フォントを埋め込んだ月次売上レポートPDFを生成する。
+CSV形式の売上データから、日本語(Noto Sans JP)フォントを埋め込んだ月次売上レポートPDFを生成する。
 
 ## 対象CSVの形式
 
@@ -32,7 +32,7 @@ python .claude/skills/pdf-sales-report/scripts/generate_sales_report.py \
 
 ## フォント
 
-`assets/fonts/meiryo.ttc`(Meiryo UI, `subfontIndex=1`)と`assets/fonts/meiryob.ttc`(太字)を同梱している。スクリプトは自身の場所からの相対パスでフォントを参照するため、どのディレクトリから実行しても動作する。
+`assets/fonts/NotoSansJP-Regular.ttf`(Noto Sans JP)と`assets/fonts/NotoSansJP-Bold.ttf`(太字)を同梱している。いずれも Google Fonts 配布の静的 TrueType 版で、SIL Open Font License 1.1 に基づき再配布している(ライセンス文は `assets/fonts/OFL.txt`)。ReportLab は CFF 形式(.otf)を読み込めないため、Noto 公式配布の .otf には差し替えないこと。スクリプトは自身の場所からの相対パスでフォントを参照するため、どのディレクトリから実行しても動作する。
 
 ## サンプルデータ
 

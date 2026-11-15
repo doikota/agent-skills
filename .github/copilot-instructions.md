@@ -4,7 +4,7 @@
 
 このリポジトリには、`.claude/skills/` 配下に独立した 2 つの Claude スキルが含まれています。各スキルは `SKILL.md` と、スタンドアロンのコマンドラインジェネレーター、独自の依存関係、サンプルアセットで構成されています。`README.md` には Dev Container のセットアップ手順とコマンド例が記載されています。
 
-- `pdf-sales-report` は CSV を読み込み、日本語の月次売上 PDF を生成します。必須カラム、レポートのセクション構成、同梱の Meiryo UI フォントについては `.claude/skills/pdf-sales-report/SKILL.md` に記載されています。フォントのパスは Python スクリプトからの相対パスで解決されます。
+- `pdf-sales-report` は CSV を読み込み、日本語の月次売上 PDF を生成します。必須カラム、レポートのセクション構成、同梱の Noto Sans JP フォントについては `.claude/skills/pdf-sales-report/SKILL.md` に記載されています。フォントのパスは Python スクリプトからの相対パスで解決されます。
 - `pptx-ai-agent-deck` は JSON を読み込み、テーマ付きの 5 枚構成のプレゼンテーションを生成します。コンテンツのスキーマ、レイアウト、対応するアイコン名については `.claude/skills/pptx-ai-agent-deck/SKILL.md` に記載されています。サンプル JSON は完全な入力例です。
 - PDF ジェネレーターはルートの `.venv` と、そのスキルの `requirements.txt` を使用します。プレゼンテーションジェネレーターは、自身のスキルディレクトリにある Node の依存関係と lockfile を使用します。Dev Container は Python 3.12 と Node 22 を対象としており、作成時に両方の依存関係をインストールします。
 

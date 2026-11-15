@@ -35,10 +35,10 @@ CHART_COLORS = [colors.HexColor(c) for c in [
 
 def register_fonts():
     pdfmetrics.registerFont(
-        TTFont("MeiryoUI", str(FONTS_DIR / "meiryo.ttc"), subfontIndex=1)
+        TTFont("NotoSansJP", str(FONTS_DIR / "NotoSansJP-Regular.ttf"))
     )
     pdfmetrics.registerFont(
-        TTFont("MeiryoUI-Bold", str(FONTS_DIR / "meiryob.ttc"), subfontIndex=1)
+        TTFont("NotoSansJP-Bold", str(FONTS_DIR / "NotoSansJP-Bold.ttf"))
     )
 
 
@@ -57,11 +57,11 @@ def department_bar_chart(dept_summary):
     for i in range(len(dept_summary)):
         chart.bars[(0, i)].fillColor = CHART_COLORS[i % len(CHART_COLORS)]
     chart.valueAxis.valueMin = 0
-    chart.valueAxis.labels.fontName = "MeiryoUI"
+    chart.valueAxis.labels.fontName = "NotoSansJP"
     chart.valueAxis.labels.fontSize = 8
     chart.valueAxis.labelTextFormat = lambda v: f"{v:,.0f}"
     chart.categoryAxis.categoryNames = list(dept_summary.index)
-    chart.categoryAxis.labels.fontName = "MeiryoUI"
+    chart.categoryAxis.labels.fontName = "NotoSansJP"
     chart.categoryAxis.labels.fontSize = 8
     chart.categoryAxis.labels.angle = 30
     chart.categoryAxis.labels.dx = -6
@@ -89,7 +89,7 @@ def product_pie_chart(product_summary):
     legend.y = 175
     legend.dx = 8
     legend.dy = 8
-    legend.fontName = "MeiryoUI"
+    legend.fontName = "NotoSansJP"
     legend.fontSize = 7.5
     legend.alignment = "left"
     legend.columnMaximum = 10
@@ -106,8 +106,8 @@ def product_pie_chart(product_summary):
 def styled_table(data, col_widths, num_cols_right_align):
     table = Table(data, colWidths=col_widths, repeatRows=1)
     style = [
-        ("FONTNAME", (0, 0), (-1, -1), "MeiryoUI"),
-        ("FONTNAME", (0, 0), (-1, 0), "MeiryoUI-Bold"),
+        ("FONTNAME", (0, 0), (-1, -1), "NotoSansJP"),
+        ("FONTNAME", (0, 0), (-1, 0), "NotoSansJP-Bold"),
         ("FONTSIZE", (0, 0), (-1, -1), 9.5),
         ("BACKGROUND", (0, 0), (-1, 0), HEADER_BG),
         ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
@@ -131,19 +131,19 @@ def build_report(csv_path, pdf_path, title):
     df = pd.read_csv(csv_path)
 
     title_style = ParagraphStyle(
-        "Title", fontName="MeiryoUI-Bold", fontSize=20, leading=26,
+        "Title", fontName="NotoSansJP-Bold", fontSize=20, leading=26,
         spaceAfter=6, textColor=colors.HexColor("#1a1a2e"),
     )
     subtitle_style = ParagraphStyle(
-        "Subtitle", fontName="MeiryoUI", fontSize=10, leading=14,
+        "Subtitle", fontName="NotoSansJP", fontSize=10, leading=14,
         spaceAfter=18, textColor=colors.HexColor("#555555"),
     )
     heading_style = ParagraphStyle(
-        "Heading", fontName="MeiryoUI-Bold", fontSize=14, leading=18,
+        "Heading", fontName="NotoSansJP-Bold", fontSize=14, leading=18,
         spaceBefore=16, spaceAfter=8, textColor=colors.HexColor("#16213e"),
     )
     body_style = ParagraphStyle(
-        "Body", fontName="MeiryoUI", fontSize=10, leading=15,
+        "Body", fontName="NotoSansJP", fontSize=10, leading=15,
     )
 
     story = [
